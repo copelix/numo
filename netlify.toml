@@ -1,7 +1,12 @@
-# Netlify arma y publica la app sola en cada cambio de la rama main.
+# Netlify arma y publica la app sola en cada cambio de la rama main,
+# pero solo si pasan todas las pruebas: si una falla, el build se corta
+# y en la web queda la última versión buena.
 [build]
-  command = "npm run build"
+  command = "npm run check && npm run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "22"
+  # El navegador de las pruebas se guarda dentro de node_modules,
+  # que Netlify reutiliza entre builds: no se descarga cada vez.
+  PLAYWRIGHT_BROWSERS_PATH = "0"
