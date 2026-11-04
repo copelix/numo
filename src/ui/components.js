@@ -30,8 +30,10 @@ export const UI = {
   },
 
   segmented({ key, value, options, label }) {
-    return html`<div class="segmented" role="group" aria-label="${label}">${options.map(([v, text]) =>
-      html`<button type="button" data-action="segment" data-key="${key}" data-value="${v}" aria-pressed="${String(String(v) === String(value))}">${text}</button>`)}</div>`;
+    return html`<div class="segmented" role="group" aria-label="${label}">${options.map(
+      ([v, text]) =>
+        html`<button type="button" data-action="segment" data-key="${key}" data-value="${v}" aria-pressed="${String(String(v) === String(value))}">${text}</button>`,
+    )}</div>`;
   },
 
   paymentRow(p, { withAction = false } = {}) {
@@ -52,7 +54,15 @@ export const UI = {
   },
 
   expenseRow(e) {
-    const badge = e.subscriptionId ? "Suscripción" : e.installmentId ? `Cuota ${e.installmentN}/${e.installmentCount}` : e.recurring ? "Mensual" : e.templateId ? "Automático" : "";
+    const badge = e.subscriptionId
+      ? "Suscripción"
+      : e.installmentId
+        ? `Cuota ${e.installmentN}/${e.installmentCount}`
+        : e.recurring
+          ? "Mensual"
+          : e.templateId
+            ? "Automático"
+            : "";
     return html`<li><button type="button" class="item item--button" data-action="edit-expense" data-id="${e.id}">
       ${UI.avatar(Finance.category(e.categoryId))}
       <span class="item__body">

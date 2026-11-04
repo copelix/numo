@@ -13,17 +13,33 @@ export const Gestures = {
   rowDown(event) {
     const item = event.target.closest(".list--swipe .item--button");
     if (!item || (event.pointerType === "mouse" && event.button !== 0)) return;
-    this.row = { item, li: item.parentElement, id: event.pointerId, x0: event.clientX, y0: event.clientY, dx: 0, active: false };
+    this.row = {
+      item,
+      li: item.parentElement,
+      id: event.pointerId,
+      x0: event.clientX,
+      y0: event.clientY,
+      dx: 0,
+      active: false,
+    };
   },
   rowMove(event) {
     const r = this.row;
     if (!r || event.pointerId !== r.id) return;
-    const dx = event.clientX - r.x0, dy = event.clientY - r.y0;
+    const dx = event.clientX - r.x0,
+      dy = event.clientY - r.y0;
     if (!r.active) {
-      if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { this.row = null; return; }
+      if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) {
+        this.row = null;
+        return;
+      }
       if (Math.abs(dx) < 12) return;
       r.active = true;
-      try { r.item.setPointerCapture(event.pointerId); } catch { /* sin captura: sigue igual */ }
+      try {
+        r.item.setPointerCapture(event.pointerId);
+      } catch {
+        /* sin captura: sigue igual */
+      }
       r.li.classList.add("is-swiping");
     }
     r.dx = Math.max(-150, Math.min(150, dx));
@@ -47,8 +63,12 @@ export const Gestures = {
       return;
     }
     r.item.style.transform = "";
-    setTimeout(() => { r.item.style.transition = ""; r.li.classList.remove("is-swiping", "is-armed"); delete r.li.dataset.dir; }, 260);
-    if (done && r.dx > 0) (action === "edit-income" ? Forms.income(id) : Forms.expense(id));
+    setTimeout(() => {
+      r.item.style.transition = "";
+      r.li.classList.remove("is-swiping", "is-armed");
+      delete r.li.dataset.dir;
+    }, 260);
+    if (done && r.dx > 0) action === "edit-income" ? Forms.income(id) : Forms.expense(id);
   },
   removeRow(action, id) {
     const isIncome = action === "edit-income";
@@ -71,19 +91,25 @@ export const Gestures = {
     const m = this.month;
     this.month = null;
     if (!m || event.pointerId !== m.id) return;
-    const dx = event.clientX - m.x0, dy = event.clientY - m.y0;
+    const dx = event.clientX - m.x0,
+      dy = event.clientY - m.y0;
     if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
     App.setHomeMonth(dx > 0 ? -1 : 1);
   },
 
   /** En el celular, la hoja de carga se cierra arrastrándola hacia abajo. */
   sheet(dialog) {
-    const grab = $(".modal__grab", dialog), head = $(".modal__head", dialog);
+    const grab = $(".modal__grab", dialog),
+      head = $(".modal__head", dialog);
     let s = null;
     const down = event => {
       if (!matchMedia("(max-width: 520px)").matches) return;
       s = { id: event.pointerId, y0: event.clientY, dy: 0 };
-      try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* nada */ }
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {
+        /* nada */
+      }
       dialog.style.transition = "none";
     };
     const move = event => {
@@ -98,10 +124,16 @@ export const Gestures = {
       dialog.style.transition = "transform .22s ease";
       if (close) {
         dialog.style.transform = "translateY(100%)";
-        setTimeout(() => { Modal.close("cancel"); dialog.style.transform = ""; dialog.style.transition = ""; }, 200);
+        setTimeout(() => {
+          Modal.close("cancel");
+          dialog.style.transform = "";
+          dialog.style.transition = "";
+        }, 200);
       } else {
         dialog.style.transform = "";
-        setTimeout(() => { dialog.style.transition = ""; }, 230);
+        setTimeout(() => {
+          dialog.style.transition = "";
+        }, 230);
       }
     };
     for (const el of [grab, head].filter(Boolean)) {

@@ -8,28 +8,54 @@ import { uid } from "../lib/utils.js";
    6. LÓGICA DE NEGOCIO (cálculos sobre el estado)
    ========================================================================= */
 export const Finance = {
-  get s() { return Store.state; },
+  get s() {
+    return Store.state;
+  },
 
-  category(id) { return this.s.categories.find(c => c.id === id) ?? UNKNOWN_CATEGORY; },
-  defaultCategoryId() { return this.s.categories.some(c => c.id === "otros") ? "otros" : this.s.categories[0].id; },
+  category(id) {
+    return this.s.categories.find(c => c.id === id) ?? UNKNOWN_CATEGORY;
+  },
+  defaultCategoryId() {
+    return this.s.categories.some(c => c.id === "otros") ? "otros" : this.s.categories[0].id;
+  },
 
-  activeSubscriptions() { return this.s.subscriptions.filter(s => s.status === "activa"); },
-  monthlyCost(sub) { return Money.cost(sub) * FREQUENCIES[sub.frequency].perMonth; },
-  subscriptionsMonthlyTotal() { return this.activeSubscriptions().reduce((t, s) => t + this.monthlyCost(s), 0); },
+  activeSubscriptions() {
+    return this.s.subscriptions.filter(s => s.status === "activa");
+  },
+  monthlyCost(sub) {
+    return Money.cost(sub) * FREQUENCIES[sub.frequency].perMonth;
+  },
+  subscriptionsMonthlyTotal() {
+    return this.activeSubscriptions().reduce((t, s) => t + this.monthlyCost(s), 0);
+  },
 
-  sum(expenses) { return expenses.reduce((t, e) => t + Money.cost(e), 0); },
-  expensesInMonth(monthKey) { return this.s.expenses.filter(e => e.date.startsWith(monthKey)); },
-  spentInMonth(monthKey) { return this.sum(this.expensesInMonth(monthKey)); },
-  spentUntilDay(monthKey, day) { return this.sum(this.expensesInMonth(monthKey).filter(e => Dates.dayOf(e.date) <= day)); },
+  sum(expenses) {
+    return expenses.reduce((t, e) => t + Money.cost(e), 0);
+  },
+  expensesInMonth(monthKey) {
+    return this.s.expenses.filter(e => e.date.startsWith(monthKey));
+  },
+  spentInMonth(monthKey) {
+    return this.sum(this.expensesInMonth(monthKey));
+  },
+  spentUntilDay(monthKey, day) {
+    return this.sum(this.expensesInMonth(monthKey).filter(e => Dates.dayOf(e.date) <= day));
+  },
 
   incomeSource(id) {
     const source = INCOME_SOURCES.find(x => x.id === id) ?? INCOME_SOURCES[INCOME_SOURCES.length - 1];
     return { ...source, color: "#59d499" };
   },
-  incomesInMonth(monthKey) { return this.s.incomes.filter(i => i.date.startsWith(monthKey)); },
-  earnedInMonth(monthKey) { return this.sum(this.incomesInMonth(monthKey)); },
+  incomesInMonth(monthKey) {
+    return this.s.incomes.filter(i => i.date.startsWith(monthKey));
+  },
+  earnedInMonth(monthKey) {
+    return this.sum(this.incomesInMonth(monthKey));
+  },
   /** Ingresos fijos expresados por mes. */
-  fixedIncomeMonthly() { return this.sum(this.s.incomes.filter(i => i.recurring)); },
+  fixedIncomeMonthly() {
+    return this.sum(this.s.incomes.filter(i => i.recurring));
+  },
 
   totalsBy(expenses, keyOf) {
     const map = new Map();
@@ -37,7 +63,10 @@ export const Finance = {
     return [...map.entries()].map(([key, total]) => ({ key, total })).sort((a, b) => b.total - a.total);
   },
   totalsByCategory(expenses) {
-    return this.totalsBy(expenses, e => e.categoryId).map(({ key, total }) => ({ category: this.category(key), total }));
+    return this.totalsBy(expenses, e => e.categoryId).map(({ key, total }) => ({
+      category: this.category(key),
+      total,
+    }));
   },
 
   /** Próxima fecha de un movimiento mensual (gasto o ingreso): un mes después de su última repetición. */
@@ -53,16 +82,39 @@ export const Finance = {
   upcoming() {
     const today = Dates.today();
     const subs = this.activeSubscriptions().map(s => ({
-      kind: "subscription", id: s.id, name: s.name, amount: s.amount, currency: s.currency,
-      categoryId: s.categoryId, paymentMethod: s.paymentMethod, date: s.nextDate, cardTax: Boolean(s.cardTax),
+      kind: "subscription",
+      id: s.id,
+      name: s.name,
+      amount: s.amount,
+      currency: s.currency,
+      categoryId: s.categoryId,
+      paymentMethod: s.paymentMethod,
+      date: s.nextDate,
+      cardTax: Boolean(s.cardTax),
     }));
-    const fixed = this.s.expenses.filter(e => e.recurring).map(e => ({
-      kind: "recurring", id: e.id, name: e.description, amount: e.amount, currency: e.currency,
-      categoryId: e.categoryId, paymentMethod: e.paymentMethod, date: this.nextRecurringDate(e), cardTax: Boolean(e.cardTax),
-    }));
+    const fixed = this.s.expenses
+      .filter(e => e.recurring)
+      .map(e => ({
+        kind: "recurring",
+        id: e.id,
+        name: e.description,
+        amount: e.amount,
+        currency: e.currency,
+        categoryId: e.categoryId,
+        paymentMethod: e.paymentMethod,
+        date: this.nextRecurringDate(e),
+        cardTax: Boolean(e.cardTax),
+      }));
     const cuotas = this.activeInstallments().map(p => ({
-      kind: "installment", id: p.id, name: `${p.description} · cuota ${p.done + 1}/${p.count}`, amount: p.amount, currency: p.currency,
-      categoryId: p.categoryId, paymentMethod: p.paymentMethod, date: this.installmentDate(p, p.done), cardTax: Boolean(p.cardTax),
+      kind: "installment",
+      id: p.id,
+      name: `${p.description} · cuota ${p.done + 1}/${p.count}`,
+      amount: p.amount,
+      currency: p.currency,
+      categoryId: p.categoryId,
+      paymentMethod: p.paymentMethod,
+      date: this.installmentDate(p, p.done),
+      cardTax: Boolean(p.cardTax),
     }));
     return [...subs, ...fixed, ...cuotas]
       .map(p => ({ ...p, days: Dates.diff(p.date, today) }))
@@ -81,18 +133,38 @@ export const Finance = {
       }
     };
     for (const s of this.activeSubscriptions()) {
-      collect(s.nextDate, d => Dates.addPeriod(d, s.frequency, s.anchorDay),
-        { id: s.id, name: s.name, amount: s.amount, currency: s.currency, categoryId: s.categoryId });
+      collect(s.nextDate, d => Dates.addPeriod(d, s.frequency, s.anchorDay), {
+        id: s.id,
+        name: s.name,
+        amount: s.amount,
+        currency: s.currency,
+        categoryId: s.categoryId,
+      });
     }
     for (const e of this.s.expenses.filter(x => x.recurring)) {
-      collect(this.nextRecurringDate(e), d => Dates.addMonths(d, 1, Dates.dayOf(e.date)),
-        { id: e.id, name: e.description, amount: e.amount, currency: e.currency, categoryId: e.categoryId, cardTax: Boolean(e.cardTax) });
+      collect(this.nextRecurringDate(e), d => Dates.addMonths(d, 1, Dates.dayOf(e.date)), {
+        id: e.id,
+        name: e.description,
+        amount: e.amount,
+        currency: e.currency,
+        categoryId: e.categoryId,
+        cardTax: Boolean(e.cardTax),
+      });
     }
     for (const p of this.activeInstallments()) {
       for (let i = p.done; i < p.count; i++) {
         const date = this.installmentDate(p, i);
         if (date > end) break;
-        if (date >= start) out.push({ id: p.id, name: `${p.description} · cuota ${i + 1}/${p.count}`, amount: p.amount, currency: p.currency, categoryId: p.categoryId, cardTax: Boolean(p.cardTax), date });
+        if (date >= start)
+          out.push({
+            id: p.id,
+            name: `${p.description} · cuota ${i + 1}/${p.count}`,
+            amount: p.amount,
+            currency: p.currency,
+            categoryId: p.categoryId,
+            cardTax: Boolean(p.cardTax),
+            date,
+          });
       }
     }
     return out.sort((a, b) => a.date.localeCompare(b.date));
@@ -114,7 +186,10 @@ export const Finance = {
         if (sub.status === "pausada") reasons.push("Está pausada: ¿la das de baja?");
         if (sub.usage === "bajo") reasons.push("La usás poco");
         const change = this.latestPriceChange(sub);
-        if (change && change.to > change.from) reasons.push(`Subió de ${Money.format(change.from, sub.currency)} a ${Money.format(change.to, sub.currency)}`);
+        if (change && change.to > change.from)
+          reasons.push(
+            `Subió de ${Money.format(change.from, sub.currency)} a ${Money.format(change.to, sub.currency)}`,
+          );
         return { sub, reasons };
       })
       .filter(x => x.reasons.length);
@@ -122,17 +197,31 @@ export const Finance = {
 
   expenseFromSubscription(sub, date) {
     return {
-      id: uid(), description: sub.name, amount: sub.amount, currency: sub.currency, date,
-      categoryId: sub.categoryId, paymentMethod: sub.paymentMethod, recurring: false,
-      subscriptionId: sub.id, ...(sub.cardTax ? { cardTax: true } : {}), ...(sub.demo ? { demo: true } : {}),
+      id: uid(),
+      description: sub.name,
+      amount: sub.amount,
+      currency: sub.currency,
+      date,
+      categoryId: sub.categoryId,
+      paymentMethod: sub.paymentMethod,
+      recurring: false,
+      subscriptionId: sub.id,
+      ...(sub.cardTax ? { cardTax: true } : {}),
+      ...(sub.demo ? { demo: true } : {}),
     };
   },
 
   /* ---------- Cuotas ---------- */
-  installmentDate(plan, index) { return Dates.addMonths(plan.firstDate, index, Dates.dayOf(plan.firstDate)); },
-  activeInstallments() { return this.s.installments.filter(p => p.done < p.count); },
+  installmentDate(plan, index) {
+    return Dates.addMonths(plan.firstDate, index, Dates.dayOf(plan.firstDate));
+  },
+  activeInstallments() {
+    return this.s.installments.filter(p => p.done < p.count);
+  },
   /** Lo que falta pagar de un plan (cuotas todavía no registradas). */
-  installmentLeft(plan) { return (plan.count - plan.done) * Money.cost(plan); },
+  installmentLeft(plan) {
+    return (plan.count - plan.done) * Money.cost(plan);
+  },
   /** Total de cuotas que caen en un mes, de todos los planes. */
   installmentsInMonth(monthKey) {
     let total = 0;
@@ -147,10 +236,19 @@ export const Finance = {
   },
   expenseFromInstallment(plan, index) {
     return {
-      id: uid(), description: plan.description, amount: plan.amount, currency: plan.currency,
-      date: this.installmentDate(plan, index), categoryId: plan.categoryId, paymentMethod: plan.paymentMethod,
-      recurring: false, installmentId: plan.id, installmentN: index + 1, installmentCount: plan.count,
-      ...(plan.cardTax ? { cardTax: true } : {}), ...(plan.demo ? { demo: true } : {}),
+      id: uid(),
+      description: plan.description,
+      amount: plan.amount,
+      currency: plan.currency,
+      date: this.installmentDate(plan, index),
+      categoryId: plan.categoryId,
+      paymentMethod: plan.paymentMethod,
+      recurring: false,
+      installmentId: plan.id,
+      installmentN: index + 1,
+      installmentCount: plan.count,
+      ...(plan.cardTax ? { cardTax: true } : {}),
+      ...(plan.demo ? { demo: true } : {}),
     };
   },
 
@@ -172,7 +270,11 @@ export const Finance = {
     }
 
     for (const plan of state.installments) {
-      for (let guard = 0; plan.done < plan.count && this.installmentDate(plan, plan.done) <= today && guard < 130; guard++) {
+      for (
+        let guard = 0;
+        plan.done < plan.count && this.installmentDate(plan, plan.done) <= today && guard < 130;
+        guard++
+      ) {
         state.expenses.push(this.expenseFromInstallment(plan, plan.done));
         plan.done++;
         changes++;
@@ -183,9 +285,17 @@ export const Finance = {
       let next = this.nextRecurringDate(template);
       for (let guard = 0; next <= today && guard < 240; guard++) {
         state.expenses.push({
-          id: uid(), description: template.description, amount: template.amount, currency: template.currency,
-          date: next, categoryId: template.categoryId, paymentMethod: template.paymentMethod,
-          recurring: false, templateId: template.id, ...(template.cardTax ? { cardTax: true } : {}), ...(template.demo ? { demo: true } : {}),
+          id: uid(),
+          description: template.description,
+          amount: template.amount,
+          currency: template.currency,
+          date: next,
+          categoryId: template.categoryId,
+          paymentMethod: template.paymentMethod,
+          recurring: false,
+          templateId: template.id,
+          ...(template.cardTax ? { cardTax: true } : {}),
+          ...(template.demo ? { demo: true } : {}),
         });
         next = Dates.addMonths(next, 1, Dates.dayOf(template.date));
         changes++;
@@ -196,8 +306,14 @@ export const Finance = {
       let next = this.nextRecurringDate(template, state.incomes);
       for (let guard = 0; next <= today && guard < 240; guard++) {
         state.incomes.push({
-          id: uid(), description: template.description, amount: template.amount, currency: template.currency,
-          date: next, sourceId: template.sourceId, recurring: false, templateId: template.id,
+          id: uid(),
+          description: template.description,
+          amount: template.amount,
+          currency: template.currency,
+          date: next,
+          sourceId: template.sourceId,
+          recurring: false,
+          templateId: template.id,
           ...(template.demo ? { demo: true } : {}),
         });
         next = Dates.addMonths(next, 1, Dates.dayOf(template.date));

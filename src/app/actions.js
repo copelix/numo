@@ -27,11 +27,18 @@ export const Actions = {
   "home-month": (_, el) => App.setHomeMonth(el.dataset.value === "today" ? "today" : Number(el.dataset.value)),
   "drill-category": (id, el) => {
     const cat = Finance.category(id);
-    App.drill({ type: "gastos", categoryId: id, from: el.dataset.from, to: el.dataset.to }, `Gastos de ${cat.name} del período.`);
+    App.drill(
+      { type: "gastos", categoryId: id, from: el.dataset.from, to: el.dataset.to },
+      `Gastos de ${cat.name} del período.`,
+    );
   },
   "drill-month": (_, el) => {
-    const key = el.dataset.value, first = Dates.parse(`${key}-01`);
-    App.drill({ from: `${key}-01`, to: `${key}-${Dates.pad(Dates.daysInMonth(first.getFullYear(), first.getMonth()))}` }, `Movimientos de ${Dates.monthName(key)}.`);
+    const key = el.dataset.value,
+      first = Dates.parse(`${key}-01`);
+    App.drill(
+      { from: `${key}-01`, to: `${key}-${Dates.pad(Dates.daysInMonth(first.getFullYear(), first.getMonth()))}` },
+      `Movimientos de ${Dates.monthName(key)}.`,
+    );
   },
   "new-subscription": () => Forms.subscription(),
   "edit-subscription": id => Forms.subscription(id),
@@ -40,21 +47,43 @@ export const Actions = {
   "contribute-goal": id => Forms.contribution(id),
   "new-category": () => Forms.category(),
   "edit-category": id => Forms.category(id),
-  "calendar-prev": () => { UIState.calendarOffset = Math.max(0, UIState.calendarOffset - 1); App.render(); },
-  "calendar-next": () => { UIState.calendarOffset = Math.min(12, UIState.calendarOffset + 1); App.render(); },
-  "calendar-today": () => { UIState.calendarOffset = 0; App.render(); },
-  "segment": (_, el) => {
+  "calendar-prev": () => {
+    UIState.calendarOffset = Math.max(0, UIState.calendarOffset - 1);
+    App.render();
+  },
+  "calendar-next": () => {
+    UIState.calendarOffset = Math.min(12, UIState.calendarOffset + 1);
+    App.render();
+  },
+  "calendar-today": () => {
+    UIState.calendarOffset = 0;
+    App.render();
+  },
+  segment: (_, el) => {
     const value = el.dataset.value;
     UIState[el.dataset.key] = /^\d+$/.test(value) ? Number(value) : value;
     App.render();
   },
   "filter-range": (_, el) => App.setFilterRange(el.dataset.value),
-  "clear-filters": () => { UIState.filters = { q: "", categoryId: "", from: "", to: "" }; UIState.expenseLimit = 60; App.render(); },
-  "show-more-expenses": () => { UIState.expenseLimit += 60; Views.renderExpenseResults(); },
+  "clear-filters": () => {
+    UIState.filters = { q: "", categoryId: "", from: "", to: "" };
+    UIState.expenseLimit = 60;
+    App.render();
+  },
+  "show-more-expenses": () => {
+    UIState.expenseLimit += 60;
+    Views.renderExpenseResults();
+  },
   "export-json": () => Transfer.exportJSON(),
   "export-csv": () => Transfer.exportCSV(),
-  "import": () => $("#import-file").click(),
-  "load-demo": () => { Store.commit(state => { Demo.add(state); Finance.settle(); }); Toast.show("Cargamos datos de ejemplo."); },
+  import: () => $("#import-file").click(),
+  "load-demo": () => {
+    Store.commit(state => {
+      Demo.add(state);
+      Finance.settle();
+    });
+    Toast.show("Cargamos datos de ejemplo.");
+  },
   "clear-demo": () => Store.commitWithUndo("Borraste los datos de ejemplo.", state => Demo.remove(state)),
   "reset-all": () => App.resetAll(),
   "sync-now": () => Sync.push(),
@@ -71,14 +100,24 @@ export const Actions = {
   "edit-shared-item": (id, el) => Forms.sharedItem(el.dataset.event, id),
   "share-shared": id => Shared.share(id),
   "shared-mine": id => Forms.sharedMine(id),
-  "toggle-shared-settled": id => Store.commit(state => {
-    const ev = state.shared.find(x => x.id === id);
-    if (ev) { ev.settled = !ev.settled; delete ev.demo; }
-  }),
+  "toggle-shared-settled": id =>
+    Store.commit(state => {
+      const ev = state.shared.find(x => x.id === id);
+      if (ev) {
+        ev.settled = !ev.settled;
+        delete ev.demo;
+      }
+    }),
   "auth-signup": () => Forms.auth("signup"),
   "auth-login": () => Forms.auth("login"),
-  "auth-later": () => { Storage.write("numo:authNudge", Date.now()); App.render(); },
-  "backup-later": () => { Backup.snooze(); App.render(); },
+  "auth-later": () => {
+    Storage.write("numo:authNudge", Date.now());
+    App.render();
+  },
+  "backup-later": () => {
+    Backup.snooze();
+    App.render();
+  },
   "sign-out": async () => {
     const ok = await Modal.confirm({
       title: "Cerrar sesión",
@@ -93,8 +132,10 @@ export const Actions = {
   "delete-account": async () => {
     const ok = await Modal.confirm({
       title: "Borrar tu cuenta",
-      message: "Se borran tu cuenta y todos tus datos guardados en ella, para siempre. Si querés, antes bajá una copia en Más → Tus datos.",
-      confirmLabel: "Borrar para siempre", danger: true,
+      message:
+        "Se borran tu cuenta y todos tus datos guardados en ella, para siempre. Si querés, antes bajá una copia en Más → Tus datos.",
+      confirmLabel: "Borrar para siempre",
+      danger: true,
     });
     if (!ok) return;
     try {
@@ -103,7 +144,11 @@ export const Actions = {
       Router.go("inicio");
       Toast.show("Borramos tu cuenta y tus datos.");
     } catch (error) {
-      Toast.show(error?.code === "unavailable" ? "Sin conexión: probá de nuevo cuando tengas internet." : "No se pudo borrar la cuenta. Probá de nuevo en un rato.");
+      Toast.show(
+        error?.code === "unavailable"
+          ? "Sin conexión: probá de nuevo cuando tengas internet."
+          : "No se pudo borrar la cuenta. Probá de nuevo en un rato.",
+      );
     }
   },
 };

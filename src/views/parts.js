@@ -27,7 +27,8 @@ export const PartsViews = {
   saveBanner() {
     if (Sync.mode !== "local" || !Storage.available) return "";
     if (Cloud.enabled) {
-      if (Storage.read("numo:authNudge") && Date.now() - Number(Storage.read("numo:authNudge")) < 5 * 86400000) return "";
+      if (Storage.read("numo:authNudge") && Date.now() - Number(Storage.read("numo:authNudge")) < 5 * 86400000)
+        return "";
       return html`<div class="banner banner--info">${icon("cloud")}<div>
         <strong>Que no se te pierda nada</strong>
         <p class="small muted">Creá tu cuenta gratis: tus datos quedan guardados y los ves en el celular y en la compu.</p>
@@ -119,11 +120,14 @@ export const PartsViews = {
     return html`<section class="card" id="cuenta">
       <header class="card__head"><h2 class="card__title">Guardado en este navegador</h2><span class="badge badge--soon">Sin sincronizar</span></header>
       <p>Tus datos se guardan solo en este navegador. Nadie más los ve, pero si borrás los datos del navegador o cambiás de teléfono, se pierden.</p>
-      ${Cloud.enabled && html`<p class="section"><strong>Creá tu cuenta gratis</strong> y tus datos quedan guardados: no se pierden y los ves en el celular y en la compu.</p>
+      ${
+        Cloud.enabled &&
+        html`<p class="section"><strong>Creá tu cuenta gratis</strong> y tus datos quedan guardados: no se pierden y los ves en el celular y en la compu.</p>
       <div class="btn-row section">
         <button type="button" class="btn btn--primary" data-action="auth-signup">Crear cuenta</button>
         <button type="button" class="btn" data-action="auth-login">Ya tengo cuenta</button>
-      </div>`}
+      </div>`
+      }
       <p class="small muted" style="margin-top:8px">Cada tanto hacé una copia en Más → Tus datos para tener un respaldo.</p>
     </section>`;
   },

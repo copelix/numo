@@ -12,13 +12,19 @@ export const CuotasViews = {
   /* ---------- Cuotas ---------- */
   cuotas() {
     const st = Store.state;
-    const active = Finance.activeInstallments().sort((a, b) => Finance.installmentDate(a, a.done).localeCompare(Finance.installmentDate(b, b.done)));
+    const active = Finance.activeInstallments().sort((a, b) =>
+      Finance.installmentDate(a, a.done).localeCompare(Finance.installmentDate(b, b.done)),
+    );
     const finished = st.installments.filter(p => p.done >= p.count);
     const thisMonth = Finance.installmentsInMonth(Dates.monthKey(0));
     const left = active.reduce((t, p) => t + Finance.installmentLeft(p), 0);
-    const next = Array.from({ length: 6 }, (_, i) => ({ key: Dates.monthKey(i), total: Finance.installmentsInMonth(Dates.monthKey(i)) }));
+    const next = Array.from({ length: 6 }, (_, i) => ({
+      key: Dates.monthKey(i),
+      total: Finance.installmentsInMonth(Dates.monthKey(i)),
+    }));
     const lastMonth = p => Dates.monthName(Finance.installmentDate(p, p.count - 1).slice(0, 7));
-    const row = p => html`<li><button type="button" class="item item--button" data-action="edit-installment" data-id="${p.id}">
+    const row =
+      p => html`<li><button type="button" class="item item--button" data-action="edit-installment" data-id="${p.id}">
       ${UI.avatar(Finance.category(p.categoryId))}
       <span class="item__body">
         <span class="item__title"><span>${p.description}</span><span class="badge badge--muted">${p.done}/${p.count}</span></span>
@@ -42,14 +48,16 @@ export const CuotasViews = {
       </div>
       ${active.length > 0 && html`<section class="card section"><header class="card__head"><h2 class="card__title">Cuotas de los próximos meses</h2></header>${Charts.bars(next)}</section>`}
       <section class="section">
-        ${active.length
-          ? html`<ul class="list">${active.map(row)}</ul>`
-          : html`<div class="card">${UI.empty({
-              iconName: "card",
-              title: "No tenés compras en cuotas",
-              text: "Cuando cargues un gasto, elegí la cantidad de cuotas. Numo registra cada cuota sola, mes a mes, y te avisa antes.",
-              action: html`<button type="button" class="btn btn--primary" data-action="new-installment">Cargar una compra</button>`,
-            })}</div>`}
+        ${
+          active.length
+            ? html`<ul class="list">${active.map(row)}</ul>`
+            : html`<div class="card">${UI.empty({
+                iconName: "card",
+                title: "No tenés compras en cuotas",
+                text: "Cuando cargues un gasto, elegí la cantidad de cuotas. Numo registra cada cuota sola, mes a mes, y te avisa antes.",
+                action: html`<button type="button" class="btn btn--primary" data-action="new-installment">Cargar una compra</button>`,
+              })}</div>`
+        }
         ${finished.length > 0 && html`<details class="section inactive"><summary>Terminadas (${finished.length})</summary><ul class="list">${finished.map(row)}</ul></details>`}
       </section>`;
   },

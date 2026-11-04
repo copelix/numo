@@ -12,7 +12,9 @@ export const Router = {
     try {
       const id = location.hash.replace(/^#\/?/, "");
       return this.isValid(id) ? id : null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   },
   current() {
     if (!this.route) this.route = this.fromURL() ?? "inicio";
@@ -20,7 +22,10 @@ export const Router = {
   },
   go(id) {
     if (!this.isValid(id)) id = "inicio";
-    if (id === this.current()) { window.scrollTo(0, 0); return; }
+    if (id === this.current()) {
+      window.scrollTo(0, 0);
+      return;
+    }
     this.route = id;
     App.render({ resetScroll: true });
   },

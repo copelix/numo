@@ -34,7 +34,7 @@ test("sin cuenta guarda en el navegador y abre sin conexión", async ({ context 
   await addExpense(page, { amount: "4321", description: "Sin cuenta" });
   expect(await page.evaluate(() => localStorage.getItem("cuentas-claras:cache"))).toContain("Sin cuenta");
   await page.evaluate(() => navigator.serviceWorker.ready);
-  await page.reload();                             // la segunda carga ya queda guardada
+  await page.reload(); // la segunda carga ya queda guardada
   await context.setOffline(true);
   await page.reload();
   await expect(page.locator(".nav--tabbar")).toBeVisible();
@@ -44,7 +44,8 @@ test("sin cuenta guarda en el navegador y abre sin conexión", async ({ context 
 
 test("crear cuenta, entrar en otro dispositivo y ver lo mismo", async ({ browser }) => {
   const supabase = fakeSupabase();
-  const a = await browser.newContext(), b = await browser.newContext();
+  const a = await browser.newContext(),
+    b = await browser.newContext();
   const { page: one } = await open(a, supabase);
   await app(one, n => n.Store.commit(s => n.Demo.remove(s)));
   await addExpense(one, { amount: "1500", description: "Antes de la cuenta" });
@@ -62,17 +63,22 @@ test("crear cuenta, entrar en otro dispositivo y ver lo mismo", async ({ browser
   await expect(two.locator("[data-auth-error]")).toHaveText(/no coinciden/);
   await two.fill('input[name="password"]', "clave-segura-1");
   await two.locator('.modal button[type="submit"]').click();
-  await expect.poll(() => app(two, n => n.Store.state.expenses.some(e => e.description === "Antes de la cuenta"))).toBe(true);
+  await expect
+    .poll(() => app(two, n => n.Store.state.expenses.some(e => e.description === "Antes de la cuenta")))
+    .toBe(true);
 
   await addExpense(two, { amount: "800", description: "Desde la compu" });
   await expect.poll(() => JSON.stringify([...supabase.db.rows.values()]).includes("Desde la compu")).toBe(true);
   await one.evaluate(() => dispatchEvent(new Event("focus")));
-  await expect.poll(() => app(one, n => n.Store.state.expenses.some(e => e.description === "Desde la compu"))).toBe(true);
-  await a.close(); await b.close();
+  await expect
+    .poll(() => app(one, n => n.Store.state.expenses.some(e => e.description === "Desde la compu")))
+    .toBe(true);
+  await a.close();
+  await b.close();
 });
 
 test("renueva la sesión sola y, si se cae, sigue guardando en el navegador", async ({ context }) => {
-  const supabase = fakeSupabase({ expiresIn: 62 });   // vence enseguida: se renueva 60 s antes
+  const supabase = fakeSupabase({ expiresIn: 62 }); // vence enseguida: se renueva 60 s antes
   const { page } = await open(context, supabase);
   await signUp(page, "ana@ejemplo.com", "clave-segura-2");
   await expect.poll(() => app(page, n => n.Sync.status)).toBe("synced");

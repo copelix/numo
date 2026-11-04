@@ -41,28 +41,34 @@ export const MasViews = {
         ${icon("right", 18)}
       </a></li>`;
     };
-    const group = (title, items) => html`<div class="menu-group"><div class="group-head"><span>${title}</span></div><ul class="list">${items}</ul></div>`;
+    const group = (title, items) =>
+      html`<div class="menu-group"><div class="group-head"><span>${title}</span></div><ul class="list">${items}</ul></div>`;
 
     return html`
       ${UI.pageHead({ title: "Más" })}
-      ${group("Tu cuenta", [
-        entry("cuenta", Sync.statusLabel(), Sync.mode === "local" ? "Sin sincronizar" : ""),
-      ])}
+      ${group("Tu cuenta", [entry("cuenta", Sync.statusLabel(), Sync.mode === "local" ? "Sin sincronizar" : "")])}
       ${group("Herramientas", [
-        entry("pagos", `${next30 ? `${next30} ${next30 === 1 ? "pago" : "pagos"} en los próximos 30 días` : "Calendario de vencimientos"} · avisos en Google Calendar`),
-        entry("planear", `${st.goals.length} ${st.goals.length === 1 ? "meta de ahorro" : "metas de ahorro"} · topes por categoría`),
+        entry(
+          "pagos",
+          `${next30 ? `${next30} ${next30 === 1 ? "pago" : "pagos"} en los próximos 30 días` : "Calendario de vencimientos"} · avisos en Google Calendar`,
+        ),
+        entry(
+          "planear",
+          `${st.goals.length} ${st.goals.length === 1 ? "meta de ahorro" : "metas de ahorro"} · topes por categoría`,
+        ),
         entry("cuotas", cuotasText),
         entry("compartidos", sharedText),
         entry("inflacion", inflationText, Inflation.missing().length ? "Falta un dato" : ""),
       ])}
       ${group("Configuración", [
-        entry("ajustes", `Tema ${Theme.OPTIONS.find(([v]) => v === st.settings.theme)[1].toLowerCase()} · moneda ${st.settings.baseCurrency} · presupuesto ${st.settings.monthlyBudget ? Money.format(st.settings.monthlyBudget) : "sin definir"} · avisos`),
+        entry(
+          "ajustes",
+          `Tema ${Theme.OPTIONS.find(([v]) => v === st.settings.theme)[1].toLowerCase()} · moneda ${st.settings.baseCurrency} · presupuesto ${st.settings.monthlyBudget ? Money.format(st.settings.monthlyBudget) : "sin definir"} · avisos`,
+        ),
         entry("categorias", `${st.categories.length} categorías con su color e ícono`),
         entry("cambio", `Dólar tarjeta (+${Money.cardTax()}%) y otras monedas`),
       ])}
-      ${group("Tus datos", [
-        entry("datos", "Exportar a Excel, importar, borrar los ejemplos"),
-      ])}`;
+      ${group("Tus datos", [entry("datos", "Exportar a Excel, importar, borrar los ejemplos")])}`;
   },
 
   /* ---------- Páginas dentro de "Más" ---------- */
@@ -87,7 +93,19 @@ export const MasViews = {
         <div class="form-grid">
           ${Field.select({ label: "Moneda base", name: "baseCurrency", value: s.baseCurrency, options: currencyOptions(), id: "set-base", "data-setting": "baseCurrency" })}
           ${Field.number({ label: `Presupuesto mensual (${s.baseCurrency})`, name: "monthlyBudget", value: s.monthlyBudget || "", id: "set-budget", "data-setting": "monthlyBudget", placeholder: "Sin presupuesto" })}
-          ${Field.select({ label: "Avisarme de los pagos", name: "remindDays", value: s.remindDays, id: "set-remind", "data-setting": "remindDays", options: [[1, "1 día antes"], [3, "3 días antes"], [7, "7 días antes"]], full: true })}
+          ${Field.select({
+            label: "Avisarme de los pagos",
+            name: "remindDays",
+            value: s.remindDays,
+            id: "set-remind",
+            "data-setting": "remindDays",
+            options: [
+              [1, "1 día antes"],
+              [3, "3 días antes"],
+              [7, "7 días antes"],
+            ],
+            full: true,
+          })}
           ${Field.select({ label: "Tema", name: "theme", value: s.theme, options: Theme.OPTIONS, id: "set-theme", "data-setting": "theme", full: true })}
           ${Field.checkbox({ label: "Registrar automáticamente los cobros de suscripciones como gastos", name: "autoLogSubscriptions", checked: s.autoLogSubscriptions, id: "set-autolog", "data-setting": "autoLogSubscriptions" })}
         </div>
@@ -98,10 +116,12 @@ export const MasViews = {
     const st = Store.state;
     return html`
       ${subHead({ title: "Categorías", actions: html`<button type="button" class="btn btn--primary" data-action="new-category">${icon("plus", 18)}Nueva</button>` })}
-      <ul class="list narrow">${st.categories.map(c => html`<li><button type="button" class="item item--button" data-action="edit-category" data-id="${c.id}">
+      <ul class="list narrow">${st.categories.map(
+        c => html`<li><button type="button" class="item item--button" data-action="edit-category" data-id="${c.id}">
         ${UI.avatar(c)}<span class="item__body"><span class="item__title"><span>${c.name}</span></span></span>
         <span class="legend__swatch" style="background:${c.color}"></span>
-      </button></li>`)}</ul>`;
+      </button></li>`,
+      )}</ul>`;
   },
 
   cambio() {
@@ -140,9 +160,11 @@ export const MasViews = {
         <section class="card">
           <header class="card__head"><h2 class="card__title">Borrar</h2></header>
           <div class="btn-row">
-            ${Store.hasDemoData()
-              ? html`<button type="button" class="btn btn--danger" data-action="clear-demo">Borrar datos de ejemplo</button>`
-              : html`<button type="button" class="btn" data-action="load-demo">Cargar datos de ejemplo</button>`}
+            ${
+              Store.hasDemoData()
+                ? html`<button type="button" class="btn btn--danger" data-action="clear-demo">Borrar datos de ejemplo</button>`
+                : html`<button type="button" class="btn" data-action="load-demo">Cargar datos de ejemplo</button>`
+            }
             <button type="button" class="btn btn--danger" data-action="reset-all">Borrar todo</button>
           </div>
         </section>

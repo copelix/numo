@@ -11,7 +11,9 @@ import { subHead } from "./index.js";
 export const PlanearViews = {
   planear() {
     const st = Store.state;
-    const spentByCat = new Map(Finance.totalsByCategory(Finance.expensesInMonth(Dates.monthKey(0))).map(x => [x.category.id, x.total]));
+    const spentByCat = new Map(
+      Finance.totalsByCategory(Finance.expensesInMonth(Dates.monthKey(0))).map(x => [x.category.id, x.total]),
+    );
     const budgetSum = Object.values(st.categoryBudgets).reduce((t, v) => t + v, 0);
 
     const budgetRows = st.categories.map(c => {
@@ -55,9 +57,15 @@ export const PlanearViews = {
       <div class="grid grid--wide">
         <section class="card">
           <header class="card__head"><h2 class="card__title">Metas de ahorro</h2><button type="button" class="btn btn--primary btn--compact" data-action="new-goal">${icon("plus", 18)}Nueva meta</button></header>
-          ${goalRows.length
-            ? html`<ul class="list">${goalRows}</ul>`
-            : UI.empty({ iconName: "target", title: "Sin metas todavía", text: "Un viaje, un fondo de emergencia, algo que quieras comprar." })}
+          ${
+            goalRows.length
+              ? html`<ul class="list">${goalRows}</ul>`
+              : UI.empty({
+                  iconName: "target",
+                  title: "Sin metas todavía",
+                  text: "Un viaje, un fondo de emergencia, algo que quieras comprar.",
+                })
+          }
         </section>
         <section class="card">
           <header class="card__head"><h2 class="card__title">Topes por categoría</h2><span class="eyebrow">Este mes</span></header>

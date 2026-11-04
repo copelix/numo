@@ -25,9 +25,16 @@ export const PagosViews = {
       <div class="grid grid--wide">
         <section class="card">
           <header class="card__head"><h2 class="card__title">Por fecha</h2><span class="eyebrow">Destacados: menos de ${CONFIG.soonDays} días</span></header>
-          ${list.length
-            ? html`<ul class="list">${list.map(p => UI.paymentRow(p))}</ul>`
-            : UI.empty({ iconName: "calendar", title: "No hay pagos programados", text: "Agregá una suscripción o un gasto mensual.", action: html`<button type="button" class="btn btn--primary" data-action="new-subscription">Agregar suscripción</button>` })}
+          ${
+            list.length
+              ? html`<ul class="list">${list.map(p => UI.paymentRow(p))}</ul>`
+              : UI.empty({
+                  iconName: "calendar",
+                  title: "No hay pagos programados",
+                  text: "Agregá una suscripción o un gasto mensual.",
+                  action: html`<button type="button" class="btn btn--primary" data-action="new-subscription">Agregar suscripción</button>`,
+                })
+          }
         </section>
         <section class="card">${Views.calendar()}</section>
       </div>
@@ -39,8 +46,20 @@ export const PagosViews = {
     const st = Store.state;
     const subs = [...Finance.activeSubscriptions()].sort((a, b) => a.nextDate.localeCompare(b.nextDate));
     const fixed = st.expenses.filter(e => e.recurring);
-    const all = [...subs.map(item => ({ item, kind: "subscription", name: item.name, meta: `${FREQUENCIES[item.frequency].label} · próximo ${Dates.formatShort(item.nextDate)}` })),
-                 ...fixed.map(item => ({ item, kind: "fixed", name: item.description, meta: `Mensual · próximo ${Dates.formatShort(Finance.nextRecurringDate(item))}` }))];
+    const all = [
+      ...subs.map(item => ({
+        item,
+        kind: "subscription",
+        name: item.name,
+        meta: `${FREQUENCIES[item.frequency].label} · próximo ${Dates.formatShort(item.nextDate)}`,
+      })),
+      ...fixed.map(item => ({
+        item,
+        kind: "fixed",
+        name: item.description,
+        meta: `Mensual · próximo ${Dates.formatShort(Finance.nextRecurringDate(item))}`,
+      })),
+    ];
     const pending = all.filter(x => !Calendar.isAdded(x.item)).length;
     return html`<section class="card section" id="calendario">
       <header class="card__head">
@@ -49,13 +68,21 @@ export const PagosViews = {
         ${icon("bell")}
       </header>
       <p class="small muted" style="margin-bottom:16px">Agregá cada cobro a Google Calendar y te avisa el celular aunque no abras Numo. Se repite solo, con la misma frecuencia de la suscripción. Si después cambiás el monto o la fecha, el botón te avisa para actualizarlo.</p>
-      ${all.length
-        ? html`<ul class="list">${all.map(({ item, kind, name, meta }) => html`<li class="item item--wrap item--calendar">
+      ${
+        all.length
+          ? html`<ul class="list">${all.map(
+              ({ item, kind, name, meta }) => html`<li class="item item--wrap item--calendar">
             ${UI.avatar(Finance.category(item.categoryId))}
             <div class="item__body"><span class="item__title"><span>${name}</span></span><span class="item__meta">${Money.format(item.amount, item.currency)} · ${meta}</span></div>
             ${Calendar.button(item, kind === "subscription" ? "subscription" : "fixed")}
-          </li>`)}</ul>`
-        : UI.empty({ iconName: "calendar", title: "No hay cobros para agendar", text: "Cargá una suscripción o un gasto mensual." })}
+          </li>`,
+            )}</ul>`
+          : UI.empty({
+              iconName: "calendar",
+              title: "No hay cobros para agendar",
+              text: "Cargá una suscripción o un gasto mensual.",
+            })
+      }
     </section>`;
   },
 
@@ -73,11 +100,19 @@ export const PagosViews = {
     for (const o of occurrences) byDate.set(o.date, [...(byDate.get(o.date) ?? []), o]);
 
     const cells = [];
-    for (let i = 0; i < leading; i++) cells.push(html`<div class="calendar__day calendar__day--blank" aria-hidden="true"></div>`);
+    for (let i = 0; i < leading; i++)
+      cells.push(html`<div class="calendar__day calendar__day--blank" aria-hidden="true"></div>`);
     for (let d = 1; d <= days; d++) {
       const date = `${monthKey}-${Dates.pad(d)}`;
       const items = byDate.get(date) ?? [];
-      const classes = ["calendar__day", date === today && "calendar__day--today", date < today && "calendar__day--past", items.length && "calendar__day--has"].filter(Boolean).join(" ");
+      const classes = [
+        "calendar__day",
+        date === today && "calendar__day--today",
+        date < today && "calendar__day--past",
+        items.length && "calendar__day--has",
+      ]
+        .filter(Boolean)
+        .join(" ");
       cells.push(html`<div class="${classes}"${attrs({ "aria-label": items.length ? `${d}: ${items.map(x => x.name).join(", ")}` : false })}>
         <span>${d}</span>
         ${items.length > 0 && html`<span class="calendar__dots">${items.slice(0, 4).map(x => html`<i class="calendar__dot" style="background:${Finance.category(x.categoryId).color}"></i>`)}</span>`}
@@ -98,13 +133,17 @@ export const PagosViews = {
         ${cells}
       </div>
       <div class="section">
-        ${occurrences.length
-          ? html`<ul class="list">${occurrences.map(o => html`<li class="item">
+        ${
+          occurrences.length
+            ? html`<ul class="list">${occurrences.map(
+                o => html`<li class="item">
               ${UI.avatar(Finance.category(o.categoryId))}
               <div class="item__body"><span class="item__title"><span>${o.name}</span></span><span class="item__meta">${Dates.formatShort(o.date)}</span></div>
               <span class="item__amount">${Money.format(o.amount, o.currency)}</span>
-            </li>`)}</ul>`
-          : html`<p class="small muted">Sin vencimientos este mes.</p>`}
+            </li>`,
+              )}</ul>`
+            : html`<p class="small muted">Sin vencimientos este mes.</p>`
+        }
       </div>`;
   },
 };

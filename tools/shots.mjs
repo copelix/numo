@@ -9,20 +9,44 @@ const MOCK = `(() => { const store = {}; window.claude = { use: async name => {
     async set(d) { store[path] = JSON.stringify(d); }, async delete() { delete store[path]; }, onSnapshot() { return () => {}; } }) };
   if (name === 'user') return { id: async () => 'u_shots' };
   return null; } }; })();`;
-const VIEWS = ["inicio", "movimientos", "suscripciones", "informes", "mas", "cuotas", "compartidos", "compartido", "inflacion", "pagos", "planear", "ajustes", "cambio", "datos", "cuenta", "categorias"];
-const b = await chromium.launch();
+const VIEWS = [
+  "inicio",
+  "movimientos",
+  "suscripciones",
+  "informes",
+  "mas",
+  "cuotas",
+  "compartidos",
+  "compartido",
+  "inflacion",
+  "pagos",
+  "planear",
+  "ajustes",
+  "cambio",
+  "datos",
+  "cuenta",
+  "categorias",
+];
+const b = await chromium.launch(process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {});
 for (const theme of ["dark", "light"]) {
-  const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce", colorScheme: theme });
+  const ctx = await b.newContext({
+    viewport: { width: 390, height: 844 },
+    reducedMotion: "reduce",
+    colorScheme: theme,
+  });
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   await ctx.addInitScript(MOCK);
   const pg = await ctx.newPage();
-  await pg.goto(url); await pg.waitForTimeout(1500);
+  await pg.goto(url);
+  await pg.waitForTimeout(1500);
   const N = await pg.evaluate(() => !!window.__numo);
   await pg.addStyleTag({ content: "*{caret-color:transparent!important} .toast{display:none!important}" });
   for (const v of VIEWS) {
     // La versión de un solo archivo no expone window.__numo: sus objetos son globales del script
     const n = N ? "window.__numo." : "";
-    await pg.evaluate(`${v === "compartido" ? `${n}UIState.sharedId = ${n}Store.state.shared[0].id;` : ""} ${n}Router.go(${JSON.stringify(v)}); window.scrollTo(0, 0);`);
+    await pg.evaluate(
+      `${v === "compartido" ? `${n}UIState.sharedId = ${n}Store.state.shared[0].id;` : ""} ${n}Router.go(${JSON.stringify(v)}); window.scrollTo(0, 0);`,
+    );
     await pg.waitForTimeout(250);
     await pg.screenshot({ path: `${out}/${theme}-${v}.png`, fullPage: true });
   }

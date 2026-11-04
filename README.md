@@ -25,15 +25,16 @@ Una app web para ordenar tu plata: ingresos, gastos, suscripciones, cuotas, pró
 
 ## Stack
 
-| Parte | Qué se usa |
-| --- | --- |
-| Interfaz | JavaScript con módulos ES, sin framework; HTML escapado por defecto |
-| Estilos | CSS con tokens de diseño (`src/styles/tokens.css`) para los dos temas |
-| Build | [Vite](https://vite.dev) |
-| Datos en la nube | [Supabase](https://supabase.com): Auth + Postgres con Row Level Security |
-| Hosting | [Netlify](https://www.netlify.com) |
-| Pruebas | [Vitest](https://vitest.dev) (unitarias) y [Playwright](https://playwright.dev) (de punta a punta) |
-| CI | GitHub Actions |
+| Parte            | Qué se usa                                                                                         |
+| ---------------- | -------------------------------------------------------------------------------------------------- |
+| Interfaz         | JavaScript con módulos ES, sin framework; HTML escapado por defecto                                |
+| Estilos          | CSS con tokens de diseño (`src/styles/tokens.css`) para los dos temas                              |
+| Build            | [Vite](https://vite.dev)                                                                           |
+| Datos en la nube | [Supabase](https://supabase.com): Auth + Postgres con Row Level Security                           |
+| Hosting          | [Netlify](https://www.netlify.com)                                                                 |
+| Pruebas          | [Vitest](https://vitest.dev) (unitarias) y [Playwright](https://playwright.dev) (de punta a punta) |
+| Calidad          | [Biome](https://biomejs.dev) (linter y formato)                                                    |
+| CI               | GitHub Actions                                                                                     |
 
 ## Estructura
 
@@ -66,13 +67,16 @@ npm test             # pruebas unitarias
 npm run test:e2e     # pruebas en el navegador (arma la app y la sirve sola)
 npm run build        # versión web en dist/
 npm run build:artifact   # versión de un solo archivo en dist-artifact/
+npm run lint         # revisa estilo y errores comunes
+npm run format       # ordena el formato de todo el código
+npm run check        # todo lo anterior junto (lo mismo que corre Netlify antes de publicar)
 ```
 
-Para las pruebas de punta a punta, la primera vez: `npx playwright install chromium`.
+Para las pruebas de punta a punta, la primera vez: `npx playwright install chromium`. Si ya tenés un Chromium instalado, podés usarlo con `PW_CHROMIUM_PATH=/ruta/al/chrome`.
 
 ## Publicación
 
-Netlify está conectado a este repositorio: cada push a `main` corre `npm run build` y publica `dist/`. GitHub Actions corre todas las pruebas en cada cambio.
+Netlify está conectado a este repositorio: en cada push a `main` corre `npm run check` (linter y todas las pruebas) y, solo si pasa, arma y publica `dist/`. GitHub Actions corre lo mismo en cada cambio y en cada pull request.
 
 La conexión con Supabase vive en `public/config.js` y usa solo la clave **publicable**, que está pensada para ir en el navegador. La clave secreta nunca entra al repo.
 

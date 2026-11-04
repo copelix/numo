@@ -11,11 +11,14 @@ export const Motion = {
     if (this.reduced()) return;
     for (const el of $$("[data-count]", root)) {
       const target = Number(el.dataset.count) || 0;
-      const start = performance.now(), dur = 750;
+      const start = performance.now(),
+        dur = 750;
       const step = () => {
-        const t = Math.min(1, (performance.now() - start) / dur), e = 1 - (1 - t) ** 3;
+        const t = Math.min(1, (performance.now() - start) / dur),
+          e = 1 - (1 - t) ** 3;
         el.textContent = Money.format(Math.round(target * e));
-        if (t < 1 && el.isConnected) requestAnimationFrame(step); else el.textContent = Money.format(target);
+        if (t < 1 && el.isConnected) requestAnimationFrame(step);
+        else el.textContent = Money.format(target);
       };
       step();
     }

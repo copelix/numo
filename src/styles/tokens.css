@@ -36,7 +36,7 @@
   --chart-out: var(--mist);
   --logo: linear-gradient(255deg, rgb(250, 203, 14), rgb(240, 107, 168) 30%, rgb(120, 186, 230) 65%, #fff);
   --sphere: var(--logo);
-  --accent: var(--mist);            /* foco, botón principal, barra actual */
+  --accent: var(--mist); /* foco, botón principal, barra actual */
   --on-accent: var(--iron);
 
   /* ---- Tipografía ---- */
@@ -46,10 +46,10 @@
   --body-line: 1.5;
   --body-spacing: normal;
   --small: 13px;
-  --label-font: var(--mono);        /* etiquetas en mayúsculas: secciones, tablas, gráficos */
-  --label-spacing: .073em;
+  --label-font: var(--mono); /* etiquetas en mayúsculas: secciones, tablas, gráficos */
+  --label-spacing: 0.073em;
   --label-color: var(--text-2);
-  --display-weight: 400;            /* títulos grandes */
+  --display-weight: 400; /* títulos grandes */
   --display-case: none;
 
   /* ---- Forma ---- */
@@ -59,51 +59,51 @@
   --radius-xl: 20px;
   --radius-control: var(--radius-sm);
   --radius-bar: 6px 6px 2px 2px;
-  --shadow-key: inset 0 1px 0 rgba(255, 255, 255, .05), inset 0 -1px 0 rgba(0, 0, 0, .2);
-  --shadow-btn: inset 0 1px 0 rgba(255, 255, 255, .08), 0 0 0 1px var(--slate);
+  --shadow-key: inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  --shadow-btn: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px var(--slate);
   --gap: 16px;
   --card-padding: 24px;
   --card-padding-sm: 16px;
   --card-border: 1px solid var(--line-strong);
 
   /* ---- Barras de navegación ---- */
-  --bar-bg: rgba(7, 8, 10, .72);
+  --bar-bg: rgba(7, 8, 10, 0.72);
   --bar-blur: blur(24px) saturate(140%);
-  --tabbar-bg: rgba(7, 8, 10, .82);
+  --tabbar-bg: rgba(7, 8, 10, 0.82);
   --tabbar-h: 68px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 
   /* ---- Controles ---- */
-  --btn-bg: rgba(255, 255, 255, .05);
-  --btn-bg-hover: rgba(255, 255, 255, .09);
+  --btn-bg: rgba(255, 255, 255, 0.05);
+  --btn-bg-hover: rgba(255, 255, 255, 0.09);
   --btn-fg: var(--text);
   --btn-fg-hover: var(--text);
   --btn-border: 0;
   --btn-size: 14px;
-  --input-bg: rgba(255, 255, 255, .05);
+  --input-bg: rgba(255, 255, 255, 0.05);
   --input-hover: var(--slate);
-  --input-focus-ring: 0 0 0 3px rgba(230, 230, 230, .14);
+  --input-focus-ring: 0 0 0 3px rgba(230, 230, 230, 0.14);
   --placeholder: var(--text-2);
   --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%239c9c9d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
   --date-icon: invert(1);
-  --date-icon-opacity: .55;
-  --backdrop: rgba(4, 5, 6, .75);
+  --date-icon-opacity: 0.55;
+  --backdrop: rgba(4, 5, 6, 0.75);
   --backdrop-blur: blur(6px);
 }
 
 :root[data-numo-theme="light"] {
   color-scheme: light;
 
-  --canvas: #e5e4e0;                /* pergamino */
-  --surface: #ffffff;               /* papel */
+  --canvas: #e5e4e0; /* pergamino */
+  --surface: #ffffff; /* papel */
   --surface-hover: #f4f3f0;
   --recessed: #e5e4e0;
   --badge: #e5e4e0;
-  --line: #bfbebe;                  /* ceniza */
+  --line: #bfbebe; /* ceniza */
   --line-strong: #bfbebe;
   --slate: #1d1d1d;
   --stone: #cdcdc9;
-  --text: #1d1d1d;                  /* tinta */
+  --text: #1d1d1d; /* tinta */
   --text-2: #5c5b57;
   --text-3: #8a8984;
   --mist: #1d1d1d;
@@ -114,7 +114,13 @@
   --warn: #9a5b00;
   --chart-in: #1d1d1d;
   --chart-out: #a3a29d;
-  --sphere: linear-gradient(255deg, rgb(250, 203, 14), rgb(240, 107, 168) 30%, rgb(120, 186, 230) 65%, rgb(255, 255, 255));
+  --sphere: linear-gradient(
+    255deg,
+    rgb(250, 203, 14),
+    rgb(240, 107, 168) 30%,
+    rgb(120, 186, 230) 65%,
+    rgb(255, 255, 255)
+  );
   --accent: var(--text);
   --on-accent: var(--canvas);
 
@@ -122,10 +128,10 @@
   --mono: var(--font);
   --num: var(--font);
   --body-line: 1.4;
-  --body-spacing: .006em;
+  --body-spacing: 0.006em;
   --small: 15px;
   --label-font: var(--font);
-  --label-spacing: .05em;
+  --label-spacing: 0.05em;
   --label-color: var(--text);
   --display-weight: 400;
   --display-case: uppercase;
@@ -159,8 +165,8 @@
   --placeholder: var(--text-3);
   --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%231d1d1d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
   --date-icon: none;
-  --date-icon-opacity: .7;
-  --backdrop: rgba(29, 29, 29, .35);
+  --date-icon-opacity: 0.7;
+  --backdrop: rgba(29, 29, 29, 0.35);
   --backdrop-blur: none;
 }
 
@@ -172,7 +178,7 @@
   --page-head-gap: 24px;
   --title-size: clamp(28px, 6vw, 32px);
   --title-line: 1.15;
-  --title-spacing: .004em;
+  --title-spacing: 0.004em;
   --page-sub-gap: 6px;
   --page-sub-size: inherit;
   --main-pad-mobile: 24px calc(var(--tabbar-h) + 48px + var(--safe-bottom));
@@ -190,13 +196,13 @@
   --nav-spacing: normal;
   --nav-case: none;
   --nav-border: 0;
-  --nav-active-bg: rgba(255, 255, 255, .07);
+  --nav-active-bg: rgba(255, 255, 255, 0.07);
   --tabbar-inset: 8px;
   --tabbar-pad: 4px;
   --tabbar-border-width: 1px;
-  --tabbar-shadow: var(--shadow-key), 0 12px 40px rgba(0, 0, 0, .6);
+  --tabbar-shadow: var(--shadow-key), 0 12px 40px rgba(0, 0, 0, 0.6);
   --tabbar-size: 11px;
-  --tabbar-active-bg: rgba(255, 255, 255, .07);
+  --tabbar-active-bg: rgba(255, 255, 255, 0.07);
   --tabbar-active-fg: var(--text);
 
   --card-title-size: 16px;
@@ -204,38 +210,37 @@
   --stat-size: 28px;
   --stat-weight: 500;
   --stat-line: 1.15;
-  --stat-spacing: .005em;
+  --stat-spacing: 0.005em;
   --stat-margin: 10px 0 6px;
 
   --hero-bg:
-    radial-gradient(80% 120% at 100% 0%, rgba(255, 99, 99, .5), transparent 60%),
-    radial-gradient(100% 140% at 0% 100%, rgba(4, 63, 150, .7), rgba(6, 18, 37, .25) 60%),
-    var(--surface);
+    radial-gradient(80% 120% at 100% 0%, rgba(255, 99, 99, 0.5), transparent 60%),
+    radial-gradient(100% 140% at 0% 100%, rgba(4, 63, 150, 0.7), rgba(6, 18, 37, 0.25) 60%), var(--surface);
   --hero-border: 1px solid var(--line-strong);
-  --hero-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
+  --hero-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
   --hero-pad: 32px 24px;
   --hero-glow: block;
   --hero-big-size: clamp(44px, 12vw, 64px);
   --hero-big-line: 1.05;
   --hero-big-spacing: normal;
   --hero-big-margin: 12px 0 8px;
-  --hero-badge-bg: rgba(0, 0, 0, .35);
-  --hero-badge-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
+  --hero-badge-bg: rgba(0, 0, 0, 0.35);
+  --hero-badge-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 
-  --primary-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 0 0 1px #000, 0 4px 4px rgba(0, 0, 0, .25);
+  --primary-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px #000, 0 4px 4px rgba(0, 0, 0, 0.25);
   --primary-bg-hover: #fff;
   --primary-fg-hover: var(--iron);
   --danger-bg: var(--ember);
   --danger-fg: var(--text);
-  --danger-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 0 0 1px var(--ember-line);
+  --danger-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px var(--ember-line);
   --danger-bg-hover: #55292a;
   --danger-fg-hover: var(--text);
-  --ghost-bg-hover: rgba(255, 255, 255, .05);
+  --ghost-bg-hover: rgba(255, 255, 255, 0.05);
 
   --badge-bg: var(--badge);
   --badge-shadow: none;
   --badge-radius: 6px;
-  --badge-spacing: .02em;
+  --badge-spacing: 0.02em;
   --badge-case: none;
   --soon-bg: var(--ember);
   --soon-fg: var(--text);
@@ -247,12 +252,12 @@
   --item-bg: var(--surface);
   --item-border: 1px solid var(--line);
   --item-radius: var(--radius-md);
-  --item-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+  --item-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   --item-pad: 12px;
   --item-hover-bg: var(--surface-hover);
-  --soon-row-bg: linear-gradient(90deg, rgba(69, 35, 36, .95), rgba(69, 35, 36, .35));
+  --soon-row-bg: linear-gradient(90deg, rgba(69, 35, 36, 0.95), rgba(69, 35, 36, 0.35));
   --soon-row-border: var(--ember-line);
-  --soon-row-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+  --soon-row-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   --soon-row-pad-left: 12px;
   --meta-size: 13px;
   --link-avatar-bg: var(--badge);
@@ -276,9 +281,9 @@
   --seg-pad: 4px;
   --seg-size: 13px;
   --seg-weight: 500;
-  --seg-on-bg: rgba(255, 255, 255, .12);
+  --seg-on-bg: rgba(255, 255, 255, 0.12);
   --seg-on-fg: var(--text);
-  --seg-on-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 0 0 1px var(--line-strong);
+  --seg-on-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 1px var(--line-strong);
 
   --field-size: 13px;
   --field-color: var(--text-2);
@@ -294,19 +299,19 @@
   --code-radius: var(--radius-sm);
 
   --modal-border: var(--line-strong);
-  --modal-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 24px 80px rgba(0, 0, 0, .7);
-  --modal-fallback: rgba(4, 5, 6, .8);
+  --modal-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 80px rgba(0, 0, 0, 0.7);
+  --modal-fallback: rgba(4, 5, 6, 0.8);
   --modal-sheet-border: 1px 1px 0;
   --modal-title-size: 20px;
   --modal-title-size-sm: 20px;
   --modal-title-weight: 500;
   --modal-title-line: inherit;
-  --modal-title-spacing: .01em;
+  --modal-title-spacing: 0.01em;
   --toast-bg: var(--badge);
   --toast-fg: inherit;
   --toast-border: 1px solid var(--line-strong);
   --toast-radius: var(--radius-md);
-  --toast-shadow: 0 12px 40px rgba(0, 0, 0, .6);
+  --toast-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
   --toast-btn-fg: var(--text);
   --toast-btn-border: 0;
   --toast-btn-bg: var(--btn-bg);
@@ -331,7 +336,7 @@
 
   --balance-value-size: clamp(40px, 11vw, 56px);
   --balance-value-line: 1.05;
-  --balance-value-spacing: .004em;
+  --balance-value-spacing: 0.004em;
   --balance-value-margin: 8px 0 16px;
   --balance-row-size: 18px;
   --sphere-display: none;
@@ -341,8 +346,8 @@
   --underline-offset: 4px;
   --page-head-gap: 32px;
   --title-size: clamp(34px, 10vw, 76px);
-  --title-line: .85;
-  --title-spacing: .013em;
+  --title-line: 0.85;
+  --title-spacing: 0.013em;
   --page-sub-gap: 14px;
   --page-sub-size: 15px;
   --main-pad-mobile: 28px calc(var(--tabbar-h) + 40px + var(--safe-bottom));
@@ -352,17 +357,18 @@
   --topbar-border-width: 0 0 1px;
   --brand-size: 15px;
   --brand-weight: 700;
-  --brand-spacing: .05em;
+  --brand-spacing: 0.05em;
   --brand-case: uppercase;
   --brand-ring: var(--text);
   --nav-size: 11px;
   --nav-weight: 700;
-  --nav-spacing: .05em;
+  --nav-spacing: 0.05em;
   --nav-case: uppercase;
   --nav-border: 1px solid transparent;
   --nav-active-bg: transparent;
   --tabbar-inset: 0px;
-  --tabbar-pad: 6px max(8px, env(safe-area-inset-left, 0px)) calc(6px + var(--safe-bottom)) max(8px, env(safe-area-inset-right, 0px));
+  --tabbar-pad: 6px max(8px, env(safe-area-inset-left, 0px)) calc(6px + var(--safe-bottom))
+    max(8px, env(safe-area-inset-right, 0px));
   --tabbar-border-width: 1px 0 0;
   --tabbar-shadow: none;
   --tabbar-size: 10.5px;
@@ -370,24 +376,23 @@
   --tabbar-active-fg: var(--canvas);
 
   --card-title-size: 18px;
-  --card-title-spacing: .01em;
+  --card-title-spacing: 0.01em;
   --stat-size: 34px;
   --stat-weight: 400;
   --stat-line: 1;
-  --stat-spacing: .013em;
+  --stat-spacing: 0.013em;
   --stat-margin: 14px 0 10px;
 
   --hero-bg:
     linear-gradient(var(--canvas) 1px, transparent 1px) 0 0 / 24px 24px,
-    linear-gradient(90deg, var(--canvas) 1px, transparent 1px) 0 0 / 24px 24px,
-    var(--surface);
+    linear-gradient(90deg, var(--canvas) 1px, transparent 1px) 0 0 / 24px 24px, var(--surface);
   --hero-border: 0;
   --hero-shadow: none;
   --hero-pad: 30px;
   --hero-glow: none;
   --hero-big-size: clamp(48px, 14vw, 90px);
-  --hero-big-line: .8;
-  --hero-big-spacing: .013em;
+  --hero-big-line: 0.8;
+  --hero-big-spacing: 0.013em;
   --hero-big-margin: 18px 0 14px;
   --hero-badge-bg: var(--surface);
   --hero-badge-shadow: none;
@@ -405,7 +410,7 @@
   --badge-bg: transparent;
   --badge-shadow: inset 0 0 0 1px var(--line);
   --badge-radius: 10px;
-  --badge-spacing: .05em;
+  --badge-spacing: 0.05em;
   --badge-case: uppercase;
   --soon-bg: var(--text);
   --soon-fg: var(--canvas);
@@ -419,7 +424,7 @@
   --item-radius: 0;
   --item-shadow: none;
   --item-pad: 14px 4px;
-  --item-hover-bg: rgba(255, 255, 255, .55);
+  --item-hover-bg: rgba(255, 255, 255, 0.55);
   --soon-row-bg: transparent;
   --soon-row-border: var(--line);
   --soon-row-shadow: inset 3px 0 0 var(--text);
@@ -430,7 +435,7 @@
   --group-first-top: 28px;
   --back-size: 11px;
   --back-weight: 500;
-  --back-spacing: .05em;
+  --back-spacing: 0.05em;
 
   --meter-h: 6px;
   --meter-warn: var(--warn);
@@ -452,26 +457,26 @@
 
   --field-size: 11px;
   --field-color: var(--text);
-  --field-spacing: .05em;
+  --field-spacing: 0.05em;
   --hint-size: 14px;
   --check-size: 15px;
   --summary-color: var(--text);
   --summary-size: 11px;
   --summary-weight: 700;
-  --summary-spacing: .05em;
+  --summary-spacing: 0.05em;
   --filters-pad: 4px 19px;
   --code-font: ui-monospace, Menlo, monospace;
   --code-radius: 0;
 
   --modal-border: var(--text);
   --modal-shadow: none;
-  --modal-fallback: rgba(29, 29, 29, .35);
+  --modal-fallback: rgba(29, 29, 29, 0.35);
   --modal-sheet-border: 1px 0 0;
   --modal-title-size: 34px;
   --modal-title-size-sm: 28px;
   --modal-title-weight: 400;
   --modal-title-line: 1;
-  --modal-title-spacing: .013em;
+  --modal-title-spacing: 0.013em;
   --toast-bg: var(--text);
   --toast-fg: var(--canvas);
   --toast-border: 0;
@@ -490,8 +495,8 @@
   --day-has-border: transparent;
   --meta-weight: 500;
   --meta-font-size: 11px;
-  --meta-spacing: .05em;
-  --chart-spacing: .05em;
+  --meta-spacing: 0.05em;
+  --chart-spacing: 0.05em;
   --chart-legend-size: 11px;
   --chart-legend-weight: 500;
   --chart-legend-color: var(--text);
@@ -500,8 +505,8 @@
   --chip-border: var(--canvas);
 
   --balance-value-size: clamp(52px, 15vw, 103px);
-  --balance-value-line: .8;
-  --balance-value-spacing: .013em;
+  --balance-value-line: 0.8;
+  --balance-value-spacing: 0.013em;
   --balance-value-margin: 18px 0 26px;
   --balance-row-size: 20px;
   --sphere-display: block;

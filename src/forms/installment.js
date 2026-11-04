@@ -16,13 +16,21 @@ export const InstallmentForms = {
     const existing = id ? st.installments.find(p => p.id === id) : null;
     if (id && !existing) return;
     const p = existing ?? {
-      description: "", amount: "", count: 12, currency: st.settings.baseCurrency, firstDate: Dates.today(),
-      categoryId: Finance.defaultCategoryId(), paymentMethod: "Tarjeta de crédito", done: 0,
+      description: "",
+      amount: "",
+      count: 12,
+      currency: st.settings.baseCurrency,
+      firstDate: Dates.today(),
+      categoryId: Finance.defaultCategoryId(),
+      paymentMethod: "Tarjeta de crédito",
+      done: 0,
     };
     const started = existing && existing.done > 0;
     Modal.open({
       title: existing ? "Editar compra en cuotas" : "Nueva compra en cuotas",
-      description: started ? `Ya se registraron ${existing.done} de ${existing.count} cuotas. Los cambios valen para las que faltan.` : "Cada cuota se carga sola en tus gastos el mes que corresponde.",
+      description: started
+        ? `Ya se registraron ${existing.done} de ${existing.count} cuotas. Los cambios valen para las que faltan.`
+        : "Cada cuota se carga sola en tus gastos el mes que corresponde.",
       body: html`<div class="form-grid">
         ${Field.input({ label: "Qué compraste", name: "description", value: p.description, required: true, maxlength: 80, placeholder: "Heladera, celular, pasajes…", autocomplete: "off", full: true })}
         ${Field.number({ label: "Monto de cada cuota", name: "amount", value: p.amount, required: true, min: "0.01" })}
@@ -43,28 +51,41 @@ export const InstallmentForms = {
           const count = Math.round(toNumber($('input[name="count"]', form).value));
           const currency = $('select[name="currency"]', form).value;
           const first = $('input[name="firstDate"]', form).value;
-          hint.textContent = amount && count >= 2 && Dates.isValid(first)
-            ? `Total ${Money.format(amount * count, currency)}. Última cuota en ${Dates.monthName(Dates.addMonths(first, count - 1, Dates.dayOf(first)).slice(0, 7))}.`
-            : "";
+          hint.textContent =
+            amount && count >= 2 && Dates.isValid(first)
+              ? `Total ${Money.format(amount * count, currency)}. Última cuota en ${Dates.monthName(Dates.addMonths(first, count - 1, Dates.dayOf(first)).slice(0, 7))}.`
+              : "";
         };
         form.addEventListener("input", update);
         update();
       },
       deleteLabel: "Eliminar compra",
-      onDelete: existing && (() => Store.commitWithUndo(`Eliminaste la compra “${existing.description}”. Las cuotas ya registradas quedan en tus gastos.`, state => {
-        state.installments = state.installments.filter(x => x.id !== id);
-      })),
+      onDelete:
+        existing &&
+        (() =>
+          Store.commitWithUndo(
+            `Eliminaste la compra “${existing.description}”. Las cuotas ya registradas quedan en tus gastos.`,
+            state => {
+              state.installments = state.installments.filter(x => x.id !== id);
+            },
+          )),
       onSubmit: (data, form) => {
         const count = Math.round(toNumber(data.count));
         if (count < 2 || count > 120 || (existing && count < existing.done)) {
           const input = $('input[name="count"]', form);
-          input.setCustomValidity(existing && count < existing.done ? `Ya se pagaron ${existing.done} cuotas.` : "Poné entre 2 y 120 cuotas.");
+          input.setCustomValidity(
+            existing && count < existing.done ? `Ya se pagaron ${existing.done} cuotas.` : "Poné entre 2 y 120 cuotas.",
+          );
           input.reportValidity();
           return false;
         }
         const values = {
-          description: data.description.trim(), amount: toNumber(data.amount), count, currency: data.currency,
-          categoryId: data.categoryId, paymentMethod: data.paymentMethod.trim(),
+          description: data.description.trim(),
+          amount: toNumber(data.amount),
+          count,
+          currency: data.currency,
+          categoryId: data.categoryId,
+          paymentMethod: data.paymentMethod.trim(),
           cardTax: data.cardTax === "on" && data.currency !== "ARS",
         };
         Store.commit(state => {
@@ -75,12 +96,20 @@ export const InstallmentForms = {
             if (!values.cardTax) delete target.cardTax;
             delete target.demo;
           } else {
-            state.installments.push(Schema.installment({ id: uid(), ...values, firstDate: data.firstDate, done: 0 },
-              { ids: new Set(state.categories.map(c => c.id)), fallback: Finance.defaultCategoryId() }));
+            state.installments.push(
+              Schema.installment(
+                { id: uid(), ...values, firstDate: data.firstDate, done: 0 },
+                { ids: new Set(state.categories.map(c => c.id)), fallback: Finance.defaultCategoryId() },
+              ),
+            );
           }
           Finance.settle();
         });
-        Toast.show(existing ? "Cambios guardados." : `Listo: ${count} cuotas de ${Money.format(values.amount, values.currency)}.`);
+        Toast.show(
+          existing
+            ? "Cambios guardados."
+            : `Listo: ${count} cuotas de ${Money.format(values.amount, values.currency)}.`,
+        );
       },
     });
   },

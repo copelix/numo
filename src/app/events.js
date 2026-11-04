@@ -20,11 +20,15 @@ export function bindEvents() {
     if (calendarLink) {
       // No se frena el enlace: se abre Google Calendar y acá solo anotamos que se agregó
       const { calendar: kind, id } = calendarLink.dataset;
-      setTimeout(() => Store.commit(state => {
-        const list = kind === "subscription" ? state.subscriptions : state.expenses;
-        const item = list.find(x => x.id === id);
-        if (item) item.calendarKey = Calendar.key(item);
-      }), 400);
+      setTimeout(
+        () =>
+          Store.commit(state => {
+            const list = kind === "subscription" ? state.subscriptions : state.expenses;
+            const item = list.find(x => x.id === id);
+            if (item) item.calendarKey = Calendar.key(item);
+          }),
+        400,
+      );
       Toast.show("Se abrió Google Calendar: tocá Guardar para agendar el cobro.");
       return;
     }
@@ -34,14 +38,16 @@ export function bindEvents() {
       const target = link.getAttribute("href").slice(1);
       if (target.startsWith("/")) {
         Router.go(target.slice(1));
-        if (link.dataset.scroll) requestAnimationFrame(() => document.getElementById(link.dataset.scroll)?.scrollIntoView({ behavior: "smooth", block: "start" }));
-      }
-      else document.getElementById(target)?.focus();
+        if (link.dataset.scroll)
+          requestAnimationFrame(() =>
+            document.getElementById(link.dataset.scroll)?.scrollIntoView({ behavior: "smooth", block: "start" }),
+          );
+      } else document.getElementById(target)?.focus();
       return;
     }
     const el = event.target.closest("[data-action]");
     if (!el || el.disabled) return;
-    if (el.dataset.swiped) return;              // fue un deslizamiento, no un toque
+    if (el.dataset.swiped) return; // fue un deslizamiento, no un toque
     const action = Actions[el.dataset.action];
     if (!action) return;
     event.preventDefault();
@@ -49,10 +55,19 @@ export function bindEvents() {
     action(el.dataset.id, el);
   });
 
-  document.addEventListener("pointerdown", event => { Gestures.rowDown(event); Gestures.monthDown(event); });
+  document.addEventListener("pointerdown", event => {
+    Gestures.rowDown(event);
+    Gestures.monthDown(event);
+  });
   document.addEventListener("pointermove", event => Gestures.rowMove(event), { passive: true });
-  document.addEventListener("pointerup", event => { Gestures.rowUp(); Gestures.monthUp(event); });
-  document.addEventListener("pointercancel", () => { Gestures.rowUp(); Gestures.month = null; });
+  document.addEventListener("pointerup", event => {
+    Gestures.rowUp();
+    Gestures.monthUp(event);
+  });
+  document.addEventListener("pointercancel", () => {
+    Gestures.rowUp();
+    Gestures.month = null;
+  });
 
   document.addEventListener("change", event => {
     const t = event.target;
@@ -71,7 +86,12 @@ export function bindEvents() {
   });
 
   const searchExpenses = debounce(() => Views.renderExpenseResults(), 150);
-  window.addEventListener("resize", debounce(() => { if (Router.current() === "inicio") MonthChart.render(); }, 150));
+  window.addEventListener(
+    "resize",
+    debounce(() => {
+      if (Router.current() === "inicio") MonthChart.render();
+    }, 150),
+  );
   document.addEventListener("input", event => {
     if (event.target.matches('[data-filter="q"]')) {
       UIState.filters.q = event.target.value;
@@ -85,14 +105,29 @@ export function bindEvents() {
   });
 
   // Escape cierra el modal pasando por nuestra lógica (resuelve las preguntas pendientes).
-  $("#modal").addEventListener("cancel", event => { event.preventDefault(); Modal.close("cancel"); });
+  $("#modal").addEventListener("cancel", event => {
+    event.preventDefault();
+    Modal.close("cancel");
+  });
 
   // Tecla N: gasto nuevo (si no estás escribiendo).
   document.addEventListener("keydown", event => {
     if (!event.key) return;
-    if (event.key === "Escape" && Modal.isOpen) { event.preventDefault(); Modal.close("cancel"); return; }
+    if (event.key === "Escape" && Modal.isOpen) {
+      event.preventDefault();
+      Modal.close("cancel");
+      return;
+    }
     const typing = event.target.closest?.("input, textarea, select, [contenteditable]");
-    if (event.key.toLowerCase() === "n" && Store.state && !event.metaKey && !event.ctrlKey && !event.altKey && !typing && !Modal.isOpen) {
+    if (
+      event.key.toLowerCase() === "n" &&
+      Store.state &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      !typing &&
+      !Modal.isOpen
+    ) {
       event.preventDefault();
       Forms.expense();
     }
@@ -104,7 +139,10 @@ export function bindEvents() {
 
   // Al volver a la app: subir lo pendiente y poner el día al día (vencimientos que pasaron).
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") { if (Sync.status === "pending") Sync.push(); return; }
+    if (document.visibilityState === "hidden") {
+      if (Sync.status === "pending") Sync.push();
+      return;
+    }
     App.settle();
     App.render();
   });

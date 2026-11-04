@@ -23,7 +23,9 @@ describe("dólar tarjeta", () => {
 describe("cuotas", () => {
   it("registra las cuotas que ya vencieron, una por mes, sin repetirlas", () => {
     const ctx = { ids: new Set(Store.state.categories.map(c => c.id)), fallback: "otros" };
-    Store.state.installments.push(Schema.installment({ description: "Heladera", amount: 54000, count: 12, firstDate: monthsAgo(3) }, ctx));
+    Store.state.installments.push(
+      Schema.installment({ description: "Heladera", amount: 54000, count: 12, firstDate: monthsAgo(3) }, ctx),
+    );
     expect(Finance.settle()).toBe(4);
     expect(Finance.settle()).toBe(0);
     const cuotas = Store.state.expenses.filter(e => e.installmentId);
@@ -36,7 +38,12 @@ describe("cuotas", () => {
 describe("suscripciones", () => {
   it("registra como gasto cada cobro que ya pasó y mueve el próximo", () => {
     const ctx = { ids: new Set(Store.state.categories.map(c => c.id)), fallback: "otros" };
-    Store.state.subscriptions.push(Schema.subscription({ name: "Spotify", amount: 4.99, currency: "USD", frequency: "mensual", nextDate: monthsAgo(2), cardTax: true }, ctx));
+    Store.state.subscriptions.push(
+      Schema.subscription(
+        { name: "Spotify", amount: 4.99, currency: "USD", frequency: "mensual", nextDate: monthsAgo(2), cardTax: true },
+        ctx,
+      ),
+    );
     expect(Finance.settle()).toBe(2);
     expect(Store.state.subscriptions[0].nextDate >= today).toBe(true);
     expect(Store.state.expenses.every(e => e.cardTax && e.subscriptionId)).toBe(true);

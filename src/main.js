@@ -79,7 +79,8 @@ export async function boot() {
 }
 
 /* Acceso para las pruebas automáticas y la consola: window.__numo.Store, etc. */
-window.__numo = Object.assign({},
+window.__numo = Object.assign(
+  {},
   appActions,
   appApp,
   appEvents,
@@ -137,7 +138,11 @@ window.__numo = Object.assign({},
 boot();
 
 /* App instalable y sin conexión: solo en la web publicada (no dentro de Claude). */
-if (import.meta.env.MODE !== "artifact" && "serviceWorker" in navigator && typeof window.claude?.use !== "function"
-    && (location.protocol === "https:" || location.hostname === "localhost")) {
+if (
+  import.meta.env.MODE !== "artifact" &&
+  "serviceWorker" in navigator &&
+  typeof window.claude?.use !== "function" &&
+  (location.protocol === "https:" || location.hostname === "localhost")
+) {
   addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
 }

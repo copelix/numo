@@ -20,14 +20,27 @@ export const PlanningForms = {
         ${Field.number({ label: "Ahorrado hasta ahora", name: "saved", value: g.saved })}
         ${Field.input({ label: "Fecha límite (opcional)", name: "deadline", type: "date", value: g.deadline, full: true, min: Dates.today() })}
       </div>`,
-      onDelete: existing && (() => Store.commitWithUndo(`Eliminaste la meta “${existing.name}”.`, state => {
-        state.goals = state.goals.filter(x => x.id !== id);
-      })),
+      onDelete:
+        existing &&
+        (() =>
+          Store.commitWithUndo(`Eliminaste la meta “${existing.name}”.`, state => {
+            state.goals = state.goals.filter(x => x.id !== id);
+          })),
       onSubmit: data => {
-        const values = { name: data.name.trim(), target: toNumber(data.target), saved: Math.max(0, toNumber(data.saved)), deadline: data.deadline };
+        const values = {
+          name: data.name.trim(),
+          target: toNumber(data.target),
+          saved: Math.max(0, toNumber(data.saved)),
+          deadline: data.deadline,
+        };
         Store.commit(state => {
-          if (existing) { Object.assign(state.goals.find(x => x.id === id), values); delete state.goals.find(x => x.id === id).demo; }
-          else state.goals.push({ id: uid(), ...values });
+          if (existing) {
+            Object.assign(
+              state.goals.find(x => x.id === id),
+              values,
+            );
+            delete state.goals.find(x => x.id === id).demo;
+          } else state.goals.push({ id: uid(), ...values });
         });
       },
     });
@@ -43,9 +56,15 @@ export const PlanningForms = {
       body: html`<div class="form-grid">${Field.number({ label: `Monto (${Money.base})`, name: "amount", required: true, min: "0.01", full: true })}</div>`,
       onSubmit: data => {
         const amount = toNumber(data.amount);
-        Store.commit(state => { state.goals.find(g => g.id === id).saved += amount; });
+        Store.commit(state => {
+          state.goals.find(g => g.id === id).saved += amount;
+        });
         const updated = Store.state.goals.find(g => g.id === id);
-        Toast.show(updated.saved >= updated.target ? `¡Llegaste a la meta “${updated.name}”!` : `Sumaste ${Money.format(amount)}.`);
+        Toast.show(
+          updated.saved >= updated.target
+            ? `¡Llegaste a la meta “${updated.name}”!`
+            : `Sumaste ${Money.format(amount)}.`,
+        );
       },
     });
   },
@@ -63,18 +82,30 @@ export const PlanningForms = {
         ${Field.input({ label: "Ícono (un emoji)", name: "icon", value: c.icon, required: true, maxlength: 8 })}
         ${Field.input({ label: "Color", name: "color", type: "color", value: c.color })}
       </div>`,
-      onDelete: canDelete && (() => {
-        const fallback = st.categories.find(x => x.id !== id && x.id === "otros") ?? st.categories.find(x => x.id !== id);
-        Store.commitWithUndo(`Eliminaste “${existing.name}”. Sus movimientos pasaron a ${fallback.name}.`, state => {
-          state.categories = state.categories.filter(x => x.id !== id);
-          for (const item of [...state.subscriptions, ...state.expenses]) if (item.categoryId === id) item.categoryId = fallback.id;
-          delete state.categoryBudgets[id];
-        });
-      }),
+      onDelete:
+        canDelete &&
+        (() => {
+          const fallback =
+            st.categories.find(x => x.id !== id && x.id === "otros") ?? st.categories.find(x => x.id !== id);
+          Store.commitWithUndo(`Eliminaste “${existing.name}”. Sus movimientos pasaron a ${fallback.name}.`, state => {
+            state.categories = state.categories.filter(x => x.id !== id);
+            for (const item of [...state.subscriptions, ...state.expenses])
+              if (item.categoryId === id) item.categoryId = fallback.id;
+            delete state.categoryBudgets[id];
+          });
+        }),
       onSubmit: data => {
-        const values = { name: data.name.trim(), icon: data.icon.trim() || "🏷️", color: isHexColor(data.color) ? data.color : "#9c9c9d" };
+        const values = {
+          name: data.name.trim(),
+          icon: data.icon.trim() || "🏷️",
+          color: isHexColor(data.color) ? data.color : "#9c9c9d",
+        };
         Store.commit(state => {
-          if (existing) Object.assign(state.categories.find(x => x.id === id), values);
+          if (existing)
+            Object.assign(
+              state.categories.find(x => x.id === id),
+              values,
+            );
           else state.categories.push({ id: uid(), ...values });
         });
       },

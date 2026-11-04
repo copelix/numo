@@ -3,6 +3,6 @@
    La "publishable key" es pública: está pensada para ir en la página.
    NUNCA pongas acá la "secret key" ni la "service_role". */
 window.NUMO_CONFIG = {
-  supabaseUrl: "https://jecxttcmpsggdihfusit.supabase.co",   // ej: https://abcdefghijkl.supabase.co
-  supabaseKey: "sb_publishable_Idd-hWNL_SKWY1fdi16cUg_S23pDlFP",   // ej: sb_publishable_...
+  supabaseUrl: "https://jecxttcmpsggdihfusit.supabase.co", // ej: https://abcdefghijkl.supabase.co
+  supabaseKey: "sb_publishable_Idd-hWNL_SKWY1fdi16cUg_S23pDlFP", // ej: sb_publishable_...
 };

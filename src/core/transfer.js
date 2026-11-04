@@ -14,14 +14,27 @@ import { Toast } from "../ui/toast.js";
    13. IMPORTAR Y EXPORTAR
    ========================================================================= */
 export const Transfer = {
-  CSV_COLUMNS: ["tipo", "nombre", "monto", "moneda", "fecha", "categoria", "metodo_pago", "frecuencia", "estado", "notas", "recurrente"],
+  CSV_COLUMNS: [
+    "tipo",
+    "nombre",
+    "monto",
+    "moneda",
+    "fecha",
+    "categoria",
+    "metodo_pago",
+    "frecuencia",
+    "estado",
+    "notas",
+    "recurrente",
+  ],
 
   async download(filename, content, type) {
     if (Sync.downloads) {
       try {
         await Sync.downloads.save({ filename, data: content });
       } catch (error) {
-        if (error?.code !== "declined") Toast.show("No se pudo exportar desde esta vista. Probá abriendo la app en claude.ai.");
+        if (error?.code !== "declined")
+          Toast.show("No se pudo exportar desde esta vista. Probá abriendo la app en claude.ai.");
       }
       return;
     }
@@ -44,9 +57,45 @@ export const Transfer = {
     const amount = n => String(n).replace(".", ",");
     const cell = value => `"${String(value ?? "").replace(/"/g, '""')}"`;
     const rows = [
-      ...st.subscriptions.map(s => ["suscripcion", s.name, amount(s.amount), s.currency, s.nextDate, Finance.category(s.categoryId).name, s.paymentMethod, s.frequency, s.status, s.notes, ""]),
-      ...st.expenses.map(e => ["gasto", e.description, amount(e.amount), e.currency, e.date, Finance.category(e.categoryId).name, e.paymentMethod, "", "", "", e.recurring ? "si" : "no"]),
-      ...st.incomes.map(i => ["ingreso", i.description, amount(i.amount), i.currency, i.date, Finance.incomeSource(i.sourceId).name, "", "", "", "", i.recurring ? "si" : "no"]),
+      ...st.subscriptions.map(s => [
+        "suscripcion",
+        s.name,
+        amount(s.amount),
+        s.currency,
+        s.nextDate,
+        Finance.category(s.categoryId).name,
+        s.paymentMethod,
+        s.frequency,
+        s.status,
+        s.notes,
+        "",
+      ]),
+      ...st.expenses.map(e => [
+        "gasto",
+        e.description,
+        amount(e.amount),
+        e.currency,
+        e.date,
+        Finance.category(e.categoryId).name,
+        e.paymentMethod,
+        "",
+        "",
+        "",
+        e.recurring ? "si" : "no",
+      ]),
+      ...st.incomes.map(i => [
+        "ingreso",
+        i.description,
+        amount(i.amount),
+        i.currency,
+        i.date,
+        Finance.incomeSource(i.sourceId).name,
+        "",
+        "",
+        "",
+        "",
+        i.recurring ? "si" : "no",
+      ]),
     ];
     const csv = [this.CSV_COLUMNS, ...rows].map(r => r.map(cell).join(";")).join("\r\n");
     this.download(`numo-${Dates.today()}.csv`, `\ufeff${csv}`, "text/csv;charset=utf-8");
@@ -57,21 +106,33 @@ export const Transfer = {
     const firstLine = text.split(/\r?\n/, 1)[0];
     const delimiter = (firstLine.match(/;/g) ?? []).length > (firstLine.match(/,/g) ?? []).length ? ";" : ",";
     const rows = [];
-    let row = [], cell = "", quoted = false;
+    let row = [],
+      cell = "",
+      quoted = false;
     for (let i = 0; i < text.length; i++) {
       const char = text[i];
       if (quoted) {
-        if (char === '"' && text[i + 1] === '"') { cell += '"'; i++; }
-        else if (char === '"') quoted = false;
+        if (char === '"' && text[i + 1] === '"') {
+          cell += '"';
+          i++;
+        } else if (char === '"') quoted = false;
         else cell += char;
       } else if (char === '"') quoted = true;
-      else if (char === delimiter) { row.push(cell); cell = ""; }
-      else if (char === "\n" || char === "\r") {
+      else if (char === delimiter) {
+        row.push(cell);
+        cell = "";
+      } else if (char === "\n" || char === "\r") {
         if (char === "\r" && text[i + 1] === "\n") i++;
-        row.push(cell); rows.push(row); row = []; cell = "";
+        row.push(cell);
+        rows.push(row);
+        row = [];
+        cell = "";
       } else cell += char;
     }
-    if (cell || row.length) { row.push(cell); rows.push(row); }
+    if (cell || row.length) {
+      row.push(cell);
+      rows.push(row);
+    }
     return rows.filter(r => r.some(v => v.trim()));
   },
 
@@ -88,11 +149,14 @@ export const Transfer = {
 
   async importJSON(text) {
     const data = JSON.parse(text);
-    if (!data || typeof data !== "object" || !(data.subscriptions || data.subs || data.expenses || data.exps)) throw new Error("Formato no reconocido");
+    if (!data || typeof data !== "object" || !(data.subscriptions || data.subs || data.expenses || data.exps))
+      throw new Error("Formato no reconocido");
     const ok = await Modal.confirm({
       title: "Importar copia completa",
-      message: "Esto reemplaza todos los datos actuales por los del archivo. Si no estás seguro, exportá primero una copia.",
-      confirmLabel: "Reemplazar", danger: true,
+      message:
+        "Esto reemplaza todos los datos actuales por los del archivo. Si no estás seguro, exportá primero una copia.",
+      confirmLabel: "Reemplazar",
+      danger: true,
     });
     if (!ok) return;
     Store.replace(data, { touch: true });
@@ -105,7 +169,8 @@ export const Transfer = {
     if (!header) throw new Error("CSV vacío");
     const index = Object.fromEntries(header.map((h, i) => [h.trim().toLowerCase(), i]));
     const get = (row, column) => String(row[index[column]] ?? "").trim();
-    let added = 0, skipped = 0;
+    let added = 0,
+      skipped = 0;
 
     Store.commit(state => {
       const ctx = { ids: new Set(), fallback: Finance.defaultCategoryId() };
@@ -113,7 +178,12 @@ export const Transfer = {
         if (!name) return ctx.fallback;
         let cat = state.categories.find(c => c.name.toLowerCase() === name.toLowerCase());
         if (!cat) {
-          cat = { id: uid(), name: name.slice(0, 40), icon: "🏷️", color: DEFAULT_CATEGORIES[state.categories.length % DEFAULT_CATEGORIES.length].color };
+          cat = {
+            id: uid(),
+            name: name.slice(0, 40),
+            icon: "🏷️",
+            color: DEFAULT_CATEGORIES[state.categories.length % DEFAULT_CATEGORIES.length].color,
+          };
           state.categories.push(cat);
         }
         return cat.id;
@@ -123,22 +193,58 @@ export const Transfer = {
         if (type === "ingreso") {
           const source = INCOME_SOURCES.find(x => x.name.toLowerCase() === get(row, "categoria").toLowerCase());
           const income = Schema.income({
-            description: get(row, "nombre"), amount: get(row, "monto"), date: get(row, "fecha"),
+            description: get(row, "nombre"),
+            amount: get(row, "monto"),
+            date: get(row, "fecha"),
             currency: get(row, "moneda").toUpperCase() || state.settings.baseCurrency,
-            sourceId: source?.id ?? "otros", recurring: /^(si|sí|true|1)$/i.test(get(row, "recurrente")),
+            sourceId: source?.id ?? "otros",
+            recurring: /^(si|sí|true|1)$/i.test(get(row, "recurrente")),
           });
-          if (income) { state.incomes.push(income); added++; } else skipped++;
+          if (income) {
+            state.incomes.push(income);
+            added++;
+          } else skipped++;
           continue;
         }
-        const common = { amount: get(row, "monto"), currency: get(row, "moneda").toUpperCase() || state.settings.baseCurrency, paymentMethod: get(row, "metodo_pago") };
+        const common = {
+          amount: get(row, "monto"),
+          currency: get(row, "moneda").toUpperCase() || state.settings.baseCurrency,
+          paymentMethod: get(row, "metodo_pago"),
+        };
         const catId = categoryId(get(row, "categoria"));
         ctx.ids = new Set(state.categories.map(c => c.id));
-        const item = type === "suscripcion"
-          ? Schema.subscription({ ...common, name: get(row, "nombre"), nextDate: get(row, "fecha"), frequency: get(row, "frecuencia"), status: get(row, "estado"), notes: get(row, "notas"), categoryId: catId }, ctx)
-          : Schema.expense({ ...common, description: get(row, "nombre"), date: get(row, "fecha"), recurring: /^(si|sí|true|1)$/i.test(get(row, "recurrente")), categoryId: catId }, ctx);
-        if (!item) { skipped++; continue; }
-        if (type === "suscripcion") { item.nextDate = nextOnOrAfter(item.nextDate, item.frequency, item.anchorDay); state.subscriptions.push(item); }
-        else state.expenses.push(item);
+        const item =
+          type === "suscripcion"
+            ? Schema.subscription(
+                {
+                  ...common,
+                  name: get(row, "nombre"),
+                  nextDate: get(row, "fecha"),
+                  frequency: get(row, "frecuencia"),
+                  status: get(row, "estado"),
+                  notes: get(row, "notas"),
+                  categoryId: catId,
+                },
+                ctx,
+              )
+            : Schema.expense(
+                {
+                  ...common,
+                  description: get(row, "nombre"),
+                  date: get(row, "fecha"),
+                  recurring: /^(si|sí|true|1)$/i.test(get(row, "recurrente")),
+                  categoryId: catId,
+                },
+                ctx,
+              );
+        if (!item) {
+          skipped++;
+          continue;
+        }
+        if (type === "suscripcion") {
+          item.nextDate = nextOnOrAfter(item.nextDate, item.frequency, item.anchorDay);
+          state.subscriptions.push(item);
+        } else state.expenses.push(item);
         added++;
       }
       Finance.settle();

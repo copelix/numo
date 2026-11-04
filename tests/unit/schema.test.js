@@ -26,23 +26,37 @@ describe("Schema.normalize", () => {
   });
 
   it("valida compras en cuotas", () => {
-    const ok = Schema.installment({ description: "Heladera", amount: 54000, count: 500, firstDate: "2026-08-10", done: 999 }, { ids: new Set(["hogar"]), fallback: "hogar" });
+    const ok = Schema.installment(
+      { description: "Heladera", amount: 54000, count: 500, firstDate: "2026-08-10", done: 999 },
+      { ids: new Set(["hogar"]), fallback: "hogar" },
+    );
     expect(ok).toMatchObject({ count: 120, done: 120, categoryId: "hogar" });
-    expect(Schema.installment({ description: "Sin monto", amount: 0, count: 3, firstDate: "2026-08-10" }, { ids: new Set(), fallback: "x" })).toBeNull();
+    expect(
+      Schema.installment(
+        { description: "Sin monto", amount: 0, count: 3, firstDate: "2026-08-10" },
+        { ids: new Set(), fallback: "x" },
+      ),
+    ).toBeNull();
   });
 
   it("una cuenta compartida necesita al menos dos personas", () => {
     expect(Schema.sharedEvent({ name: "Solo", people: ["Yo"] })).toBeNull();
-    const ev = Schema.sharedEvent({ name: "Viaje", people: ["Yo", "Sofía"], items: [{ description: "Nafta", amount: 100, paidBy: 9, among: [7, 1, 1] }] });
+    const ev = Schema.sharedEvent({
+      name: "Viaje",
+      people: ["Yo", "Sofía"],
+      items: [{ description: "Nafta", amount: 100, paidBy: 9, among: [7, 1, 1] }],
+    });
     expect(ev.items[0]).toMatchObject({ paidBy: 1, among: [1] });
   });
 
   it("guarda solo meses válidos de inflación", () => {
-    const s = Schema.normalize({ version: 2, settings: { ipc: { "2026-10": 2.4, "octubre": 3, "2026-11": "" } } });
+    const s = Schema.normalize({ version: 2, settings: { ipc: { "2026-10": 2.4, octubre: 3, "2026-11": "" } } });
     expect(s.settings.ipc).toEqual({ "2026-10": 2.4 });
   });
 
   it("el estado inicial trae todas las colecciones", () => {
-    expect(Object.keys(createInitialState())).toEqual(expect.arrayContaining(["subscriptions", "expenses", "incomes", "goals", "installments", "shared"]));
+    expect(Object.keys(createInitialState())).toEqual(
+      expect.arrayContaining(["subscriptions", "expenses", "incomes", "goals", "installments", "shared"]),
+    );
   });
 });

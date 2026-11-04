@@ -7,7 +7,10 @@ const head = src.slice(src.indexOf("<head>") + 6, src.indexOf("</head>"));
 const body = src.slice(src.indexOf("<body>") + 6, src.lastIndexOf("</body>"));
 
 const keep = tag => !/data-web-only/.test(tag) && !/<meta charset|name="viewport"/.test(tag);
-const headTags = head.match(/<title>[\s\S]*?<\/title>|<meta[^>]*>|<link[^>]*>|<style[^>]*>[\s\S]*?<\/style>|<script[^>]*>[\s\S]*?<\/script>|<!--[\s\S]*?-->/g) ?? [];
+const headTags =
+  head.match(
+    /<title>[\s\S]*?<\/title>|<meta[^>]*>|<link[^>]*>|<style[^>]*>[\s\S]*?<\/style>|<script[^>]*>[\s\S]*?<\/script>|<!--[\s\S]*?-->/g,
+  ) ?? [];
 const scripts = headTags.filter(t => t.startsWith("<script") && keep(t));
 const rest = headTags.filter(t => !t.startsWith("<script") && !t.startsWith("<!--") && keep(t));
 const markup = body.replace(/<script type="module"[^>]*src=[^>]*><\/script>/, "").trim();

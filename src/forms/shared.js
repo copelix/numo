@@ -22,25 +22,55 @@ export const SharedForms = {
     const used = new Set(existing ? existing.items.flatMap(it => [it.paidBy, ...it.among]) : []);
     Modal.open({
       title: existing ? "Editar cuenta compartida" : "Nueva cuenta compartida",
-      description: existing ? "Podés cambiar nombres y sumar personas. Solo se puede sacar a alguien si no tiene gastos." : "Después cargás quién pagó qué.",
+      description: existing
+        ? "Podés cambiar nombres y sumar personas. Solo se puede sacar a alguien si no tiene gastos."
+        : "Después cargás quién pagó qué.",
       body: html`<div class="form-grid">
         ${Field.input({ label: "Nombre", name: "name", value: existing?.name ?? "", required: true, maxlength: 60, placeholder: "Asado del sábado, viaje a Mendoza…", autocomplete: "off", full: true })}
         ${Field.input({ label: "Fecha", name: "date", type: "date", value: existing?.date ?? Dates.today(), required: true })}
         ${Field.select({ label: "Moneda", name: "currency", value: existing?.currency ?? st.settings.baseCurrency, options: currencyOptions() })}
-        ${existing
-          ? existing.people.map((p, i) => Field.input({ label: i === 0 ? "Tu nombre" : `Persona ${i + 1}`, name: `person-${i}`, value: p, maxlength: 30, required: i === 0 || used.has(i), autocomplete: "off", hint: i > 0 && !used.has(i) ? "Dejalo vacío para sacarlo." : "" }))
-          : Field.input({ label: "Tu nombre", name: "person-0", value: "Yo", maxlength: 30, required: true, autocomplete: "off" })}
+        ${
+          existing
+            ? existing.people.map((p, i) =>
+                Field.input({
+                  label: i === 0 ? "Tu nombre" : `Persona ${i + 1}`,
+                  name: `person-${i}`,
+                  value: p,
+                  maxlength: 30,
+                  required: i === 0 || used.has(i),
+                  autocomplete: "off",
+                  hint: i > 0 && !used.has(i) ? "Dejalo vacío para sacarlo." : "",
+                }),
+              )
+            : Field.input({
+                label: "Tu nombre",
+                name: "person-0",
+                value: "Yo",
+                maxlength: 30,
+                required: true,
+                autocomplete: "off",
+              })
+        }
         ${Field.input({ label: existing ? "Sumar personas" : "Con quién", name: "more", maxlength: 400, placeholder: "Pitote, Garu, Baren", autocomplete: "off", full: true, required: !existing, hint: "Separá los nombres con comas." })}
       </div>`,
       focus: existing ? null : 'input[name="name"]',
       deleteLabel: "Eliminar cuenta",
-      onDelete: existing && (() => {
-        Store.commitWithUndo(`Eliminaste “${existing.name}”.`, state => { state.shared = state.shared.filter(x => x.id !== id); });
-        Router.go("compartidos");
-      }),
+      onDelete:
+        existing &&
+        (() => {
+          Store.commitWithUndo(`Eliminaste “${existing.name}”.`, state => {
+            state.shared = state.shared.filter(x => x.id !== id);
+          });
+          Router.go("compartidos");
+        }),
       onSubmit: (data, form) => {
-        const more = data.more.split(/[,;\n]/).map(x => x.trim().slice(0, 30)).filter(Boolean);
-        const kept = existing ? existing.people.map((_, i) => (data[`person-${i}`] ?? "").trim().slice(0, 30)) : [(data["person-0"] || "Yo").trim()];
+        const more = data.more
+          .split(/[,;\n]/)
+          .map(x => x.trim().slice(0, 30))
+          .filter(Boolean);
+        const kept = existing
+          ? existing.people.map((_, i) => (data[`person-${i}`] ?? "").trim().slice(0, 30))
+          : [(data["person-0"] || "Yo").trim()];
         const people = [...kept.filter(Boolean), ...more];
         if (people.length < 2) {
           const input = $('input[name="more"]', form);
@@ -57,14 +87,20 @@ export const SharedForms = {
         // Índices viejos → nuevos (los que quedaron vacíos se sacan)
         const map = new Map();
         let next = 0;
-        kept.forEach((name, i) => { if (name) map.set(i, next++); });
+        kept.forEach((name, i) => {
+          if (name) map.set(i, next++);
+        });
         const newId = existing?.id ?? uid();
         Store.commit(state => {
           const values = { name: data.name.trim(), date: data.date, currency: data.currency, people };
           if (existing) {
             const target = state.shared.find(x => x.id === id);
             Object.assign(target, values);
-            target.items = target.items.map(it => ({ ...it, paidBy: map.get(it.paidBy), among: it.among.map(i => map.get(i)).filter(i => i !== undefined) }));
+            target.items = target.items.map(it => ({
+              ...it,
+              paidBy: map.get(it.paidBy),
+              among: it.among.map(i => map.get(i)).filter(i => i !== undefined),
+            }));
             delete target.demo;
           } else {
             state.shared.push(Schema.sharedEvent({ id: newId, ...values, items: [] }));
@@ -96,20 +132,32 @@ export const SharedForms = {
         <p class="form-error field--full" role="alert" data-item-error></p>
       </div>`,
       focus: existing ? null : 'input[name="description"]',
-      onDelete: existing && (() => Store.commitWithUndo(`Sacaste “${existing.description}”.`, state => {
-        const target = state.shared.find(x => x.id === eventId);
-        target.items = target.items.filter(x => x.id !== itemId);
-      })),
+      onDelete:
+        existing &&
+        (() =>
+          Store.commitWithUndo(`Sacaste “${existing.description}”.`, state => {
+            const target = state.shared.find(x => x.id === eventId);
+            target.items = target.items.filter(x => x.id !== itemId);
+          })),
       onSubmit: (data, form) => {
         const among = ev.people.map((_, i) => i).filter(i => data[`among-${i}`] === "on");
         if (!among.length) {
           $("[data-item-error]", form).textContent = "Elegí al menos una persona para dividir.";
           return false;
         }
-        const values = { description: data.description.trim(), amount: toNumber(data.amount), paidBy: Number(data.paidBy), among };
+        const values = {
+          description: data.description.trim(),
+          amount: toNumber(data.amount),
+          paidBy: Number(data.paidBy),
+          among,
+        };
         Store.commit(state => {
           const target = state.shared.find(x => x.id === eventId);
-          if (existing) Object.assign(target.items.find(x => x.id === itemId), values);
+          if (existing)
+            Object.assign(
+              target.items.find(x => x.id === itemId),
+              values,
+            );
           else target.items.push({ id: uid(), ...values });
           target.settled = false;
           delete target.demo;
@@ -136,10 +184,20 @@ export const SharedForms = {
       onSubmit: data => {
         const expenseId = uid();
         Store.commit(state => {
-          state.expenses.push(Schema.expense({
-            id: expenseId, description: `${ev.name} (mi parte)`, amount: Math.round(share * 100) / 100, currency: ev.currency,
-            date: data.date, categoryId: data.categoryId, paymentMethod: "",
-          }, { ids: new Set(state.categories.map(c => c.id)), fallback: Finance.defaultCategoryId() }));
+          state.expenses.push(
+            Schema.expense(
+              {
+                id: expenseId,
+                description: `${ev.name} (mi parte)`,
+                amount: Math.round(share * 100) / 100,
+                currency: ev.currency,
+                date: data.date,
+                categoryId: data.categoryId,
+                paymentMethod: "",
+              },
+              { ids: new Set(state.categories.map(c => c.id)), fallback: Finance.defaultCategoryId() },
+            ),
+          );
           state.shared.find(x => x.id === eventId).expenseId = expenseId;
         });
         Toast.show(`Anotaste ${Money.format(share, ev.currency)} en tus gastos.`);

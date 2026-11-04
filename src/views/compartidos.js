@@ -26,21 +26,25 @@ export const CompartidosViews = {
         subtitle: "Anotá quién pagó qué y Numo calcula quién le paga a quién",
         actions: html`<button type="button" class="btn btn--primary" data-action="new-shared">${icon("plus", 18)}Nuevo</button>`,
       })}
-      ${list.length
-        ? html`<ul class="list">${list.map(ev => html`<li><button type="button" class="item item--button${ev.settled ? " item--off" : ""}" data-action="open-shared" data-id="${ev.id}">
+      ${
+        list.length
+          ? html`<ul class="list">${list.map(
+              ev => html`<li><button type="button" class="item item--button${ev.settled ? " item--off" : ""}" data-action="open-shared" data-id="${ev.id}">
             <span class="avatar" aria-hidden="true">${icon("users")}</span>
             <span class="item__body">
               <span class="item__title"><span>${ev.name}</span>${status(ev)}</span>
               <span class="item__meta">${Dates.formatShort(ev.date)} · ${ev.people.length} personas · ${ev.items.length} ${ev.items.length === 1 ? "gasto" : "gastos"}</span>
             </span>
             <span class="item__end"><span class="item__amount">${Money.format(Shared.total(ev), ev.currency)}</span></span>
-          </button></li>`)}</ul>`
-        : html`<div class="card">${UI.empty({
-            iconName: "users",
-            title: "Nada compartido todavía",
-            text: "El asado, el viaje, la cancha… Cargá quién pagó qué y Numo te dice quién le debe a quién, listo para mandar al grupo.",
-            action: html`<button type="button" class="btn btn--primary" data-action="new-shared">Empezar una cuenta</button>`,
-          })}</div>`}`;
+          </button></li>`,
+            )}</ul>`
+          : html`<div class="card">${UI.empty({
+              iconName: "users",
+              title: "Nada compartido todavía",
+              text: "El asado, el viaje, la cancha… Cargá quién pagó qué y Numo te dice quién le debe a quién, listo para mandar al grupo.",
+              action: html`<button type="button" class="btn btn--primary" data-action="new-shared">Empezar una cuenta</button>`,
+            })}</div>`
+      }`;
   },
 
   compartido() {
@@ -64,36 +68,52 @@ export const CompartidosViews = {
       <div class="grid grid--wide section">
         <section class="card">
           <header class="card__head"><h2 class="card__title">Quién pagó qué</h2><button type="button" class="btn btn--primary btn--compact" data-action="add-shared-item" data-id="${ev.id}">${icon("plus", 18)}Agregar</button></header>
-          ${ev.items.length
-            ? html`<ul class="list">${ev.items.map(it => html`<li><button type="button" class="item item--button" data-action="edit-shared-item" data-id="${it.id}" data-event="${ev.id}">
+          ${
+            ev.items.length
+              ? html`<ul class="list">${ev.items.map(
+                  it => html`<li><button type="button" class="item item--button" data-action="edit-shared-item" data-id="${it.id}" data-event="${ev.id}">
                 <span class="item__body">
                   <span class="item__title"><span>${it.description}</span></span>
                   <span class="item__meta">Pagó ${ev.people[it.paidBy]} · ${it.among.length === all ? "entre todos" : `entre ${it.among.map(i => ev.people[i]).join(", ")}`}</span>
                 </span>
                 <span class="item__end"><span class="item__amount">${f(it.amount)}</span><span class="small muted">${f(it.amount / it.among.length)} c/u</span></span>
-              </button></li>`)}</ul>`
-            : UI.empty({ iconName: "receipt", title: "Todavía no hay gastos", text: "Agregá lo que pagó cada uno: la carne, las bebidas, la nafta…" })}
+              </button></li>`,
+                )}</ul>`
+              : UI.empty({
+                  iconName: "receipt",
+                  title: "Todavía no hay gastos",
+                  text: "Agregá lo que pagó cada uno: la carne, las bebidas, la nafta…",
+                })
+          }
         </section>
         <section class="card">
           <header class="card__head"><h2 class="card__title">Para quedar a mano</h2>${ev.settled && html`<span class="badge badge--muted">Saldado</span>`}</header>
-          ${ev.items.length === 0
-            ? html`<p class="small muted">Cuando cargues gastos, acá aparece quién le paga a quién.</p>`
-            : transfers.length
-              ? html`<ul class="list">${transfers.map(t => html`<li class="item">
+          ${
+            ev.items.length === 0
+              ? html`<p class="small muted">Cuando cargues gastos, acá aparece quién le paga a quién.</p>`
+              : transfers.length
+                ? html`<ul class="list">${transfers.map(
+                    t => html`<li class="item">
                   <span class="avatar" aria-hidden="true">${icon("swap")}</span>
                   <span class="item__body"><span class="item__title"><span>${ev.people[t.from]} → ${ev.people[t.to]}</span></span>
                     <span class="item__meta">${t.from === 0 ? "Le pagás vos" : t.to === 0 ? "Te paga a vos" : "Entre ellos"}</span></span>
                   <span class="item__end"><span class="item__amount">${f(t.amount)}</span></span>
-                </li>`)}</ul>`
-              : html`<p>Están todos a mano.</p>`}
-          <ul class="mini-list" aria-label="Cuánto puso cada uno">${balances.map((r, i) => html`<li>
+                </li>`,
+                  )}</ul>`
+                : html`<p>Están todos a mano.</p>`
+          }
+          <ul class="mini-list" aria-label="Cuánto puso cada uno">${balances.map(
+            (r, i) => html`<li>
             <span>${r.name}${i === 0 && " (vos)"}<small>Puso ${f(r.paid)} · le toca ${f(r.share)}</small></span>
-            <span class="delta ${r.balance > 0.5 ? "delta--good" : r.balance < -0.5 ? "delta--bad" : ""}">${Math.abs(r.balance) < 0.5 ? "a mano" : `${r.balance > 0 ? "+" : "−"}${f(Math.abs(r.balance))}`}</span></li>`)}</ul>
+            <span class="delta ${r.balance > 0.5 ? "delta--good" : r.balance < -0.5 ? "delta--bad" : ""}">${Math.abs(r.balance) < 0.5 ? "a mano" : `${r.balance > 0 ? "+" : "−"}${f(Math.abs(r.balance))}`}</span></li>`,
+          )}</ul>
           <div class="btn-row section">
             <button type="button" class="btn btn--primary" data-action="share-shared" data-id="${ev.id}"${attrs({ disabled: !ev.items.length })}>Mandar al grupo</button>
-            ${myExpense
-              ? html`<button type="button" class="btn" data-action="edit-expense" data-id="${myExpense.id}">Ver mi gasto</button>`
-              : html`<button type="button" class="btn" data-action="shared-mine" data-id="${ev.id}"${attrs({ disabled: mine.share < 0.5 })}>Anotar mi parte (${f(mine.share)})</button>`}
+            ${
+              myExpense
+                ? html`<button type="button" class="btn" data-action="edit-expense" data-id="${myExpense.id}">Ver mi gasto</button>`
+                : html`<button type="button" class="btn" data-action="shared-mine" data-id="${ev.id}"${attrs({ disabled: mine.share < 0.5 })}>Anotar mi parte (${f(mine.share)})</button>`
+            }
             <button type="button" class="btn btn--ghost" data-action="toggle-shared-settled" data-id="${ev.id}">${ev.settled ? "Reabrir" : "Marcar saldado"}</button>
           </div>
         </section>

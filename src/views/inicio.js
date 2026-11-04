@@ -45,16 +45,25 @@ export const InicioViews = {
           <div><span class="small muted">Ingresos del mes</span><strong class="item__amount--in">${Money.format(earned)}</strong></div>
           <div><span class="small muted">Gastos del mes</span><strong>${Money.format(spent)}</strong></div>
         </div>
-        <p class="small muted" style="margin-top:12px">${!earned
-          ? (isCurrent ? html`<button type="button" class="link-btn" data-action="new-income">Cargá tus ingresos del mes</button> para ver cuánto te queda.` : "No cargaste ingresos en ese mes.")
-          : balance >= 0 ? `Te queda el ${Math.round((balance / earned) * 100)}% de lo que entró.` : `Gastaste ${Money.format(-balance)} más de lo que entró.`}
+        <p class="small muted" style="margin-top:12px">${
+          !earned
+            ? isCurrent
+              ? html`<button type="button" class="link-btn" data-action="new-income">Cargá tus ingresos del mes</button> para ver cuánto te queda.`
+              : "No cargaste ingresos en ese mes."
+            : balance >= 0
+              ? `Te queda el ${Math.round((balance / earned) * 100)}% de lo que entró.`
+              : `Gastaste ${Money.format(-balance)} más de lo que entró.`
+        }
           ${prevEarned > 0 && ` ${isCurrent ? "El mes pasado" : `En ${Dates.monthName(prevKey).split(" ")[0]}`} ${prevBalance >= 0 ? `te quedaron ${Money.format(prevBalance)}` : `gastaste ${Money.format(-prevBalance)} de más`}.`}</p>
         ${!isCurrent && html`<p class="small" style="margin-top:12px"><button type="button" class="link-btn" data-action="home-month" data-value="today">Volver a este mes</button></p>`}
-        ${budget > 0 && html`<div class="balance__budget">
+        ${
+          budget > 0 &&
+          html`<div class="balance__budget">
           <div class="balance__budget-head"><span class="small muted">Presupuesto: ${Money.format(spent)} de ${Money.format(budget)}</span><span class="small">${Math.round(used)}%</span></div>
           ${UI.meter(used, "Presupuesto usado")}
           ${spent > budget && html`<p class="small">Te pasaste por ${Money.format(spent - budget)}.</p>`}
-        </div>`}
+        </div>`
+        }
       </section>
 
       ${Views.monthChartCard()}
@@ -66,9 +75,11 @@ export const InicioViews = {
           <div><h2 class="card__title">Esta semana</h2>${week.length > 0 && html`<p class="small muted">${Money.format(weekTotal)} en ${week.length} ${week.length === 1 ? "pago" : "pagos"}</p>`}</div>
           <a class="link small" href="#/pagos">Ver todos</a>
         </header>
-        ${week.length
-          ? html`<ul class="list">${week.map(p => UI.paymentRow(p))}</ul>`
-          : UI.empty({ iconName: "calendar", title: "Nada para pagar en los próximos 7 días" })}
+        ${
+          week.length
+            ? html`<ul class="list">${week.map(p => UI.paymentRow(p))}</ul>`
+            : UI.empty({ iconName: "calendar", title: "Nada para pagar en los próximos 7 días" })
+        }
       </section>`;
   },
 
@@ -77,11 +88,16 @@ export const InicioViews = {
     const cur = d.current.at(-1) ?? 0;
     const prev = d.previous[Math.min(d.today, d.previous.length) - 1] ?? 0;
     const diff = cur - prev;
-    const month = d.monthName.split(" ")[0], prevMonth = d.prevName.split(" ")[0];
-    const note = !cur && !prev ? "Todavía no hay gastos para comparar."
-      : !d.isCurrent ? `Gastaste ${Money.format(cur)} en ${month}${prev ? `: ${diff > 0 ? `${Money.format(diff)} más` : diff < 0 ? `${Money.format(-diff)} menos` : "lo mismo"} que en ${prevMonth}` : ""}.`
-      : prev ? `A esta altura del mes pasado llevabas ${Money.format(prev)}: ${diff > 0 ? `vas ${Money.format(diff)} arriba` : diff < 0 ? `vas ${Money.format(-diff)} abajo` : "vas igual"}.`
-      : `Llevás ${Money.format(cur)} gastados este mes.`;
+    const month = d.monthName.split(" ")[0],
+      prevMonth = d.prevName.split(" ")[0];
+    const note =
+      !cur && !prev
+        ? "Todavía no hay gastos para comparar."
+        : !d.isCurrent
+          ? `Gastaste ${Money.format(cur)} en ${month}${prev ? `: ${diff > 0 ? `${Money.format(diff)} más` : diff < 0 ? `${Money.format(-diff)} menos` : "lo mismo"} que en ${prevMonth}` : ""}.`
+          : prev
+            ? `A esta altura del mes pasado llevabas ${Money.format(prev)}: ${diff > 0 ? `vas ${Money.format(diff)} arriba` : diff < 0 ? `vas ${Money.format(-diff)} abajo` : "vas igual"}.`
+            : `Llevás ${Money.format(cur)} gastados este mes.`;
     return html`<section class="card section mchart-card" aria-labelledby="mchart-title">
       <header class="card__head">
         <div><h2 class="card__title" id="mchart-title">${d.isCurrent ? "Así viene el mes" : `Así fue ${month}`}</h2><p class="small muted">${note}</p></div>

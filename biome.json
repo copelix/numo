@@ -6,13 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": [
-      "**",
-      "!!**/dist",
-      "!!**/dist-artifact",
-      "!docs",
-      "!public/icons"
-    ]
+    "includes": ["**", "!!**/dist", "!!**/dist-artifact", "!docs", "!public/icons"]
   },
   "formatter": {
     "enabled": true,
@@ -34,9 +28,7 @@
       "quoteStyle": "double",
       "arrowParentheses": "asNeeded"
     },
-    "globals": [
-      "__APP_VERSION__"
-    ]
+    "globals": ["__APP_VERSION__"]
   },
   "assist": {
     "enabled": true,

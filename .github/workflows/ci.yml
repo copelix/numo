@@ -16,6 +16,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Estilo y errores comunes (Biome)
+        run: npm run lint
       - name: Pruebas de lógica (Vitest)
         run: npm test
       - name: Navegador para las pruebas de punta a punta

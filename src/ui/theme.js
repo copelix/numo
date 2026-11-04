@@ -3,7 +3,11 @@ import { Storage } from "../lib/storage.js";
 
 /* ---------- Tema: del sistema, claro u oscuro ---------- */
 export const Theme = {
-  OPTIONS: [["system", "Predeterminado del sistema"], ["light", "Claro"], ["dark", "Oscuro"]],
+  OPTIONS: [
+    ["system", "Predeterminado del sistema"],
+    ["light", "Claro"],
+    ["dark", "Oscuro"],
+  ],
   KEY: "numo:theme",
   media: matchMedia("(prefers-color-scheme: light)"),
   /** La preferencia: la guardada en tus datos o, mientras cargan, la de este dispositivo. */
@@ -21,7 +25,11 @@ export const Theme = {
     if (root.dataset.numoTheme !== theme) root.dataset.numoTheme = theme;
     Storage.write(this.KEY, pref);
     let meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) { meta = document.createElement("meta"); meta.name = "theme-color"; document.head.append(meta); }
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "theme-color";
+      document.head.append(meta);
+    }
     meta.content = theme === "light" ? "#e5e4e0" : "#040506";
   },
 };

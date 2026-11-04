@@ -19,7 +19,19 @@ import { InflacionViews } from "./inflacion.js";
 export function subHead({ title, subtitle, actions, back = ["mas", "Más"] }) {
   return html`<a class="back-link" href="#/${back[0]}">${icon("left", 16)}${back[1]}</a>${UI.pageHead({ title, subtitle, actions })}`;
 }
-export const Views = { ...PartsViews, ...InicioViews, ...MovimientosViews, ...SuscripcionesViews, ...InformesViews, ...MasViews, ...PagosViews, ...PlanearViews, ...CuotasViews, ...CompartidosViews, ...InflacionViews };
+export const Views = {
+  ...PartsViews,
+  ...InicioViews,
+  ...MovimientosViews,
+  ...SuscripcionesViews,
+  ...InformesViews,
+  ...MasViews,
+  ...PagosViews,
+  ...PlanearViews,
+  ...CuotasViews,
+  ...CompartidosViews,
+  ...InflacionViews,
+};
 
 /** Lo que hay que hacer después de dibujar cada vista. */
 export const AfterRender = {

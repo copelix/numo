@@ -19,15 +19,23 @@ import { AfterRender, Views } from "../views/index.js";
 export const App = {
   renderNav(current) {
     const section = ROUTES.find(r => r.id === current)?.parent ?? current;
-    const links = wide => ROUTES.filter(r => r.main).map(r => html`<a class="nav__link" href="#/${r.id}"${attrs({ "aria-current": r.id === section ? "page" : false })}>${icon(r.icon)}<span>${wide ? (r.wide ?? r.label) : r.label}</span></a>`);
+    const links = wide =>
+      ROUTES.filter(r => r.main).map(
+        r =>
+          html`<a class="nav__link" href="#/${r.id}"${attrs({ "aria-current": r.id === section ? "page" : false })}>${icon(r.icon)}<span>${wide ? (r.wide ?? r.label) : r.label}</span></a>`,
+      );
     $(".nav--top").innerHTML = String(html`${links(true)}`);
     $(".nav--tabbar").innerHTML = String(html`${links(false)}`);
     // El "+" de arriba se adapta: en Suscripciones agrega una suscripción; en el resto pregunta gasto o ingreso
     const add = $("#topbar-add");
-    const target = current === "suscripciones" ? ["new-subscription", "Nueva suscripción"]
-      : current === "movimientos" && UIState.movementType === "gastos" ? ["new-expense", "Nuevo gasto"]
-      : current === "movimientos" && UIState.movementType === "ingresos" ? ["new-income", "Nuevo ingreso"]
-      : ["new-entry", "Agregar"];
+    const target =
+      current === "suscripciones"
+        ? ["new-subscription", "Nueva suscripción"]
+        : current === "movimientos" && UIState.movementType === "gastos"
+          ? ["new-expense", "Nuevo gasto"]
+          : current === "movimientos" && UIState.movementType === "ingresos"
+            ? ["new-income", "Nuevo ingreso"]
+            : ["new-entry", "Agregar"];
     add.dataset.action = target[0];
     add.title = target[1];
     add.setAttribute("aria-label", target[1]);
@@ -41,13 +49,19 @@ export const App = {
     const main = $("#main");
     if (!Store.state) {
       this.renderNav(view);
-      main.innerHTML = String(html`<div class="loading" role="status"><span class="loading__mark" aria-hidden="true"></span><p>Cargando tus datos…</p></div>`);
+      main.innerHTML = String(
+        html`<div class="loading" role="status"><span class="loading__mark" aria-hidden="true"></span><p>Cargando tus datos…</p></div>`,
+      );
       return;
     }
     const active = document.activeElement;
     const focusId = active?.id && main.contains(active) ? active.id : null;
     let selection = null;
-    try { selection = focusId ? [active.selectionStart, active.selectionEnd] : null; } catch { selection = null; }
+    try {
+      selection = focusId ? [active.selectionStart, active.selectionEnd] : null;
+    } catch {
+      selection = null;
+    }
 
     this.renderNav(view);
     main.innerHTML = String(html`${Views[view]()}${Views.footer()}`);
@@ -55,12 +69,19 @@ export const App = {
     const entering = resetScroll || !this.rendered || this.animateNext;
     this.rendered = true;
     this.animateNext = false;
-    if (entering) { Motion.enter(main); Motion.countUp(main); }
+    if (entering) {
+      Motion.enter(main);
+      Motion.countUp(main);
+    }
 
     if (focusId) {
       const el = document.getElementById(focusId);
       el?.focus({ preventScroll: true });
-      try { if (selection && selection[0] !== null) el.setSelectionRange(...selection); } catch { /* campos sin selección */ }
+      try {
+        if (selection && selection[0] !== null) el.setSelectionRange(...selection);
+      } catch {
+        /* campos sin selección */
+      }
     }
     if (resetScroll) {
       window.scrollTo(0, 0);
@@ -94,11 +115,14 @@ export const App = {
   markPaid(id) {
     const sub = Store.state.subscriptions.find(s => s.id === id);
     if (!sub) return;
-    Store.commitWithUndo(`Registraste el pago de ${sub.name}. Próximo cobro: ${Dates.formatShort(Dates.addPeriod(sub.nextDate, sub.frequency, sub.anchorDay))}.`, state => {
-      const target = state.subscriptions.find(s => s.id === id);
-      state.expenses.push(Finance.expenseFromSubscription(target, Dates.today()));
-      target.nextDate = Dates.addPeriod(target.nextDate, target.frequency, target.anchorDay);
-    });
+    Store.commitWithUndo(
+      `Registraste el pago de ${sub.name}. Próximo cobro: ${Dates.formatShort(Dates.addPeriod(sub.nextDate, sub.frequency, sub.anchorDay))}.`,
+      state => {
+        const target = state.subscriptions.find(s => s.id === id);
+        state.expenses.push(Finance.expenseFromSubscription(target, Dates.today()));
+        target.nextDate = Dates.addPeriod(target.nextDate, target.frequency, target.anchorDay);
+      },
+    );
   },
 
   updateSetting(input) {
@@ -109,7 +133,9 @@ export const App = {
     else if (key === "remindDays") value = Number(input.value);
     else if (key === "cardTax") value = clamp(toNumber(input.value), 0, 200);
     else value = input.value;
-    Store.commit(state => { state.settings[key] = value; });
+    Store.commit(state => {
+      state.settings[key] = value;
+    });
     if (key === "theme") Theme.apply();
     if (key === "autoLogSubscriptions" && value) this.settle();
   },
@@ -122,7 +148,9 @@ export const App = {
       Toast.show("El tipo de cambio tiene que ser mayor a cero.");
       return;
     }
-    Store.commit(state => { state.settings.rates[currency] = value; });
+    Store.commit(state => {
+      state.settings.rates[currency] = value;
+    });
   },
 
   /** Inflación de un mes: vacío vuelve al dato del INDEC (o lo deja sin dato). */
@@ -162,14 +190,20 @@ export const App = {
   async resetAll() {
     const ok = await Modal.confirm({
       title: "Borrar todo",
-      message: "Se borran suscripciones, gastos, ingresos, cuotas, cuentas compartidas, metas y topes. Las categorías y los ajustes se mantienen.",
-      confirmLabel: "Borrar todo", danger: true,
+      message:
+        "Se borran suscripciones, gastos, ingresos, cuotas, cuentas compartidas, metas y topes. Las categorías y los ajustes se mantienen.",
+      confirmLabel: "Borrar todo",
+      danger: true,
     });
     if (!ok) return;
     Store.commitWithUndo("Borraste todos tus datos.", state => {
-      state.subscriptions = []; state.expenses = []; state.incomes = []; state.goals = []; state.categoryBudgets = {};
-      state.installments = []; state.shared = [];
+      state.subscriptions = [];
+      state.expenses = [];
+      state.incomes = [];
+      state.goals = [];
+      state.categoryBudgets = {};
+      state.installments = [];
+      state.shared = [];
     });
   },
-
 };

@@ -9,7 +9,9 @@ export const Persist = {
       if (!navigator.storage?.persist) return;
       if (await navigator.storage.persisted()) return;
       await navigator.storage.persist();
-    } catch { /* no todos los navegadores lo permiten: no pasa nada */ }
+    } catch {
+      /* no todos los navegadores lo permiten: no pasa nada */
+    }
   },
 };
 /** Recordatorio de copia para quien guarda solo en el navegador. */
@@ -17,7 +19,9 @@ export const Backup = {
   KEY: "numo:lastBackup",
   DISMISS_KEY: "numo:backupNudge",
   DAYS: 30,
-  mark() { Storage.write(this.KEY, Date.now()); },
+  mark() {
+    Storage.write(this.KEY, Date.now());
+  },
   due() {
     if (Sync.mode !== "local" || !Storage.available || !Store.hasUserData()) return false;
     const last = Number(Storage.read(this.KEY)) || 0;
@@ -35,5 +39,7 @@ export const Backup = {
     }
     return Date.now() - last > this.DAYS * day;
   },
-  snooze() { Storage.write(this.DISMISS_KEY, Date.now()); },
+  snooze() {
+    Storage.write(this.DISMISS_KEY, Date.now());
+  },
 };

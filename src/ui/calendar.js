@@ -30,7 +30,9 @@ export const Calendar = {
       `Cobro de ${name}: ${Money.format(amount, currency)} (${FREQUENCIES[frequency].label.toLowerCase()}).`,
       paymentMethod && `Se paga con: ${paymentMethod}.`,
       "Agregado desde Numo.",
-    ].filter(Boolean).join("\n");
+    ]
+      .filter(Boolean)
+      .join("\n");
     const params = new URLSearchParams({
       action: "TEMPLATE",
       text: `Pago de ${name} · ${Money.format(amount, currency)}`,
@@ -41,14 +43,35 @@ export const Calendar = {
     return `https://calendar.google.com/calendar/render?${params}`;
   },
   forSubscription(sub) {
-    return this.link({ name: sub.name, amount: sub.amount, currency: sub.currency, date: sub.nextDate, frequency: sub.frequency, anchorDay: sub.anchorDay, paymentMethod: sub.paymentMethod });
+    return this.link({
+      name: sub.name,
+      amount: sub.amount,
+      currency: sub.currency,
+      date: sub.nextDate,
+      frequency: sub.frequency,
+      anchorDay: sub.anchorDay,
+      paymentMethod: sub.paymentMethod,
+    });
   },
   forFixedExpense(expense) {
-    return this.link({ name: expense.description, amount: expense.amount, currency: expense.currency, date: Finance.nextRecurringDate(expense), anchorDay: Dates.dayOf(expense.date), paymentMethod: expense.paymentMethod });
+    return this.link({
+      name: expense.description,
+      amount: expense.amount,
+      currency: expense.currency,
+      date: Finance.nextRecurringDate(expense),
+      anchorDay: Dates.dayOf(expense.date),
+      paymentMethod: expense.paymentMethod,
+    });
   },
   /** ¿Ya lo agregó con estos mismos datos? Si cambió el monto o la fecha, conviene volver a agregarlo. */
-  key(item) { return [item.amount, item.currency, item.frequency ?? "mensual", item.anchorDay ?? Dates.dayOf(item.date)].join("|"); },
-  isAdded(item) { return Boolean(item.calendarKey) && item.calendarKey === this.key(item); },
+  key(item) {
+    return [item.amount, item.currency, item.frequency ?? "mensual", item.anchorDay ?? Dates.dayOf(item.date)].join(
+      "|",
+    );
+  },
+  isAdded(item) {
+    return Boolean(item.calendarKey) && item.calendarKey === this.key(item);
+  },
   button(item, kind, { compact = true } = {}) {
     const href = kind === "subscription" ? this.forSubscription(item) : this.forFixedExpense(item);
     const added = this.isAdded(item);

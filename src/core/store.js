@@ -2,7 +2,7 @@ import { App } from "../app/app.js";
 import { CONFIG } from "../config.js";
 import { Schema } from "./schema.js";
 import { Storage } from "../lib/storage.js";
-import { deepClone, } from "../lib/utils.js";
+import { deepClone } from "../lib/utils.js";
 import { Sync } from "../sync/sync.js";
 import { Toast } from "../ui/toast.js";
 
@@ -25,7 +25,9 @@ export const Store = {
     const ok = Storage.write(CONFIG.cacheKey, { uid: Sync.uid, state: this.state });
     if (!ok && !Storage.warned && Sync.mode === "local") {
       Storage.warned = true;
-      Toast.show("No se pudo guardar en este navegador (¿memoria llena?). Exportá tus datos para no perderlos.", { duration: 8000 });
+      Toast.show("No se pudo guardar en este navegador (¿memoria llena?). Exportá tus datos para no perderlos.", {
+        duration: 8000,
+      });
     }
     return ok;
   },
@@ -53,15 +55,22 @@ export const Store = {
   replace(next, { touch = false } = {}) {
     this.state = Schema.normalize(next);
     if (touch) this.save();
-    else { this.persist(); App.render(); }
+    else {
+      this.persist();
+      App.render();
+    }
   },
 
   hasUserData() {
     const s = this.state;
-    return [...s.subscriptions, ...s.expenses, ...s.incomes, ...s.goals, ...s.installments, ...s.shared].some(item => !item.demo);
+    return [...s.subscriptions, ...s.expenses, ...s.incomes, ...s.goals, ...s.installments, ...s.shared].some(
+      item => !item.demo,
+    );
   },
   hasDemoData() {
     const s = this.state;
-    return [...s.subscriptions, ...s.expenses, ...s.incomes, ...s.goals, ...s.installments, ...s.shared].some(item => item.demo);
+    return [...s.subscriptions, ...s.expenses, ...s.incomes, ...s.goals, ...s.installments, ...s.shared].some(
+      item => item.demo,
+    );
   },
 };

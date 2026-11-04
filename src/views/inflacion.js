@@ -17,14 +17,19 @@ export const InflacionViews = {
     const missing = Inflation.missing();
     const last = Inflation.lastKnown();
     const year = last.slice(0, 4);
-    const ytd = Inflation.accumulated(Array.from({ length: Number(last.slice(5)) }, (_, i) => `${year}-${Dates.pad(i + 1)}`));
+    const ytd = Inflation.accumulated(
+      Array.from({ length: Number(last.slice(5)) }, (_, i) => `${year}-${Dates.pad(i + 1)}`),
+    );
     const yoy = Inflation.accumulated(Array.from({ length: 12 }, (_, i) => Dates.shiftMonth(last, -i)));
     return html`
       ${subHead({ title: "Inflación", subtitle: "IPC del INDEC: se usa para comparar tus gastos en pesos de hoy" })}
-      ${missing.length > 0 && html`<div class="banner" role="status">${icon("bell")}<div>
+      ${
+        missing.length > 0 &&
+        html`<div class="banner" role="status">${icon("bell")}<div>
         <strong>Falta la inflación de ${missing.map(k => Dates.monthName(k)).join(" y ")}</strong>
         <p class="small">El INDEC la publica a mediados del mes siguiente. Buscala en <a class="link" href="${INDEC_IPC_URL}" target="_blank" rel="noopener">indec.gob.ar</a> y cargala abajo. Mientras tanto, Numo usa el último dato.</p>
-      </div></div>`}
+      </div></div>`
+      }
       <div class="grid grid--stats">
         <article class="card"><p class="eyebrow">${capitalize(Dates.monthName(last))}</p><p class="stat__value">${Inflation.pct(Inflation.rate(last))}</p><p class="stat__note">Último dato cargado</p></article>
         <article class="card"><p class="eyebrow">En lo que va de ${year}</p><p class="stat__value">${Inflation.pct(ytd.pct)}</p><p class="stat__note">Acumulada, ${ytd.months} ${ytd.months === 1 ? "mes" : "meses"}</p></article>

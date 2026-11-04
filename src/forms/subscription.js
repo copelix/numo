@@ -17,14 +17,24 @@ export const SubscriptionForms = {
     const existing = id ? st.subscriptions.find(s => s.id === id) : null;
     if (id && !existing) return;
     const s = existing ?? {
-      name: "", amount: "", currency: st.settings.baseCurrency, frequency: "mensual", nextDate: Dates.today(),
-      categoryId: Finance.defaultCategoryId(), paymentMethod: "", notes: "", status: "activa", usage: "",
+      name: "",
+      amount: "",
+      currency: st.settings.baseCurrency,
+      frequency: "mensual",
+      nextDate: Dates.today(),
+      categoryId: Finance.defaultCategoryId(),
+      paymentMethod: "",
+      notes: "",
+      status: "activa",
+      usage: "",
     };
     const change = existing && Finance.latestPriceChange(existing);
 
     Modal.open({
       title: existing ? "Editar suscripción" : "Nueva suscripción",
-      description: change ? `Último cambio de precio: de ${Money.format(change.from, s.currency)} a ${Money.format(change.to, s.currency)}.` : "",
+      description: change
+        ? `Último cambio de precio: de ${Money.format(change.from, s.currency)} a ${Money.format(change.to, s.currency)}.`
+        : "",
       body: html`<div class="form-grid">
         ${Field.input({ label: "Nombre", name: "name", value: s.name, required: true, maxlength: 80, placeholder: "Netflix, gimnasio, hosting…", autocomplete: "off", full: true })}
         ${Field.number({ label: "Monto", name: "amount", value: s.amount, required: true, min: "0.01" })}
@@ -42,29 +52,46 @@ export const SubscriptionForms = {
             ${Field.textarea({ label: "Notas", name: "notes", value: s.notes, maxlength: 300, rows: 2 })}
           </div>
         </details>
-        ${existing && existing.status === "activa" && html`<div class="field--full more">
+        ${
+          existing &&
+          existing.status === "activa" &&
+          html`<div class="field--full more">
           <p class="small muted" style="margin:8px 0">Recibí un aviso en el celular antes de cada cobro.</p>
           ${Calendar.button(existing, "subscription")}
-        </div>`}
+        </div>`
+        }
       </div>${paymentDatalist()}`,
       onReady: form => Field.wireCardTax(form),
-      onDelete: existing && (() => Store.commitWithUndo(`Eliminaste “${existing.name}”.`, state => {
-        state.subscriptions = state.subscriptions.filter(x => x.id !== id);
-      })),
+      onDelete:
+        existing &&
+        (() =>
+          Store.commitWithUndo(`Eliminaste “${existing.name}”.`, state => {
+            state.subscriptions = state.subscriptions.filter(x => x.id !== id);
+          })),
       onSubmit: data => {
         const amount = toNumber(data.amount);
         const anchorDay = Dates.dayOf(data.nextDate);
         // Si la fecha ya pasó, se lleva al próximo cobro sin registrar gastos viejos.
         const nextDate = nextOnOrAfter(data.nextDate, data.frequency, anchorDay);
         const values = {
-          name: data.name.trim(), amount, currency: data.currency, frequency: data.frequency, nextDate, anchorDay,
-          categoryId: data.categoryId, paymentMethod: data.paymentMethod.trim(), notes: data.notes.trim(),
-          status: data.status, usage: data.usage, cardTax: data.cardTax === "on" && data.currency !== "ARS",
+          name: data.name.trim(),
+          amount,
+          currency: data.currency,
+          frequency: data.frequency,
+          nextDate,
+          anchorDay,
+          categoryId: data.categoryId,
+          paymentMethod: data.paymentMethod.trim(),
+          notes: data.notes.trim(),
+          status: data.status,
+          usage: data.usage,
+          cardTax: data.cardTax === "on" && data.currency !== "ARS",
         };
         Store.commit(state => {
           if (existing) {
             const target = state.subscriptions.find(x => x.id === id);
-            if (target.amount !== amount || target.currency !== data.currency) target.priceHistory.push({ date: Dates.today(), amount });
+            if (target.amount !== amount || target.currency !== data.currency)
+              target.priceHistory.push({ date: Dates.today(), amount });
             Object.assign(target, values);
             if (!values.cardTax) delete target.cardTax;
             delete target.demo;
@@ -73,9 +100,13 @@ export const SubscriptionForms = {
             state.subscriptions.push({ id: uid(), ...values, priceHistory: [{ date: Dates.today(), amount }] });
           }
         });
-        Toast.show(nextDate !== data.nextDate
-          ? `Esa fecha ya pasó: el próximo cobro queda para el ${Dates.formatShort(nextDate)}.`
-          : existing ? "Cambios guardados." : "Suscripción agregada.");
+        Toast.show(
+          nextDate !== data.nextDate
+            ? `Esa fecha ya pasó: el próximo cobro queda para el ${Dates.formatShort(nextDate)}.`
+            : existing
+              ? "Cambios guardados."
+              : "Suscripción agregada.",
+        );
       },
     });
   },

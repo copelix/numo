@@ -8,4 +8,11 @@ import { PlanningForms } from "./planning.js";
 /* =========================================================================
    12. FORMULARIOS
    ========================================================================= */
-export const Forms = { ...MovementsForms, ...SubscriptionForms, ...InstallmentForms, ...SharedForms, ...AuthForms, ...PlanningForms };
+export const Forms = {
+  ...MovementsForms,
+  ...SubscriptionForms,
+  ...InstallmentForms,
+  ...SharedForms,
+  ...AuthForms,
+  ...PlanningForms,
+};

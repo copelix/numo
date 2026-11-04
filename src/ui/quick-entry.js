@@ -15,12 +15,14 @@ export const QuickEntry = {
   },
   /** Los últimos movimientos distintos, para repetirlos en un toque. */
   recents(list, limit = 5) {
-    const seen = new Set(), out = [];
+    const seen = new Set(),
+      out = [];
     for (const x of [...list].sort((a, b) => b.date.localeCompare(a.date))) {
       if (x.subscriptionId || x.templateId) continue;
       const key = x.description.trim().toLowerCase();
       if (seen.has(key)) continue;
-      seen.add(key); out.push(x);
+      seen.add(key);
+      out.push(x);
       if (out.length >= limit) break;
     }
     return out;
@@ -28,8 +30,10 @@ export const QuickEntry = {
   recentsHTML(items) {
     if (!items.length) return "";
     return html`<div class="field field--full"><span>Repetir uno reciente</span>
-      <div class="recents">${items.map(x => html`<button type="button" class="recent" data-recent="${x.id}">
-        <span>${x.description}</span><span class="recent__amount">${Money.format(x.amount, x.currency)}</span></button>`)}</div></div>`;
+      <div class="recents">${items.map(
+        x => html`<button type="button" class="recent" data-recent="${x.id}">
+        <span>${x.description}</span><span class="recent__amount">${Money.format(x.amount, x.currency)}</span></button>`,
+      )}</div></div>`;
   },
   descriptionsDatalist(list) {
     const names = [...new Set(list.map(x => x.description))].slice(0, 80);
@@ -40,9 +44,14 @@ export const QuickEntry = {
     const amount = $('input[name="amount"]', form);
     const currency = $('select[name="currency"]', form);
     const quick = $("[data-quick]", form);
-    const pickRadio = (name, value) => { const r = $(`input[name="${name}"][value="${CSS.escape(value)}"]`, form); if (r) r.checked = true; };
+    const pickRadio = (name, value) => {
+      const r = $(`input[name="${name}"][value="${CSS.escape(value)}"]`, form);
+      if (r) r.checked = true;
+    };
     let manualCategory = false;
-    form.addEventListener("change", e => { if (e.target.name === "categoryId" || e.target.name === "sourceId") manualCategory = true; });
+    form.addEventListener("change", e => {
+      if (e.target.name === "categoryId" || e.target.name === "sourceId") manualCategory = true;
+    });
     quick?.addEventListener("click", e => {
       const b = e.target.closest("[data-add]");
       if (!b) return;
@@ -51,7 +60,9 @@ export const QuickEntry = {
       amount.setCustomValidity("");
       amount.focus({ preventScroll: true });
     });
-    currency?.addEventListener("change", () => { if (quick) quick.innerHTML = String(this.amountsHTML(currency.value)); });
+    currency?.addEventListener("change", () => {
+      if (quick) quick.innerHTML = String(this.amountsHTML(currency.value));
+    });
     $(".recents", form)?.addEventListener("click", e => {
       const b = e.target.closest("[data-recent]");
       const x = b && list.find(i => i.id === b.dataset.recent);
@@ -73,7 +84,9 @@ export const QuickEntry = {
     $('input[name="description"]', form)?.addEventListener("change", e => {
       if (manualCategory) return;
       const text = e.target.value.trim().toLowerCase();
-      const match = [...list].sort((a, b) => b.date.localeCompare(a.date)).find(x => x.description.trim().toLowerCase() === text);
+      const match = [...list]
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .find(x => x.description.trim().toLowerCase() === text);
       if (!match) return;
       if (kind === "expense") {
         pickRadio("categoryId", match.categoryId);

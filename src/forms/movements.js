@@ -19,7 +19,10 @@ export const MovementsForms = {
     const choice = await Modal.choose({
       title: "¿Qué querés cargar?",
       message: "Elegí si es plata que salió o que entró.",
-      options: [{ value: "income", label: "Ingreso" }, { value: "expense", label: "Gasto", variant: "primary" }],
+      options: [
+        { value: "income", label: "Ingreso" },
+        { value: "expense", label: "Gasto", variant: "primary" },
+      ],
     });
     if (choice === "expense") Forms.expense();
     else if (choice === "income") Forms.income();
@@ -30,13 +33,22 @@ export const MovementsForms = {
     const existing = id ? st.expenses.find(e => e.id === id) : null;
     if (id && !existing) return;
     const e = existing ?? {
-      description: "", amount: "", currency: st.settings.baseCurrency, date: Dates.today(),
-      categoryId: Finance.defaultCategoryId(), paymentMethod: "", recurring: false,
+      description: "",
+      amount: "",
+      currency: st.settings.baseCurrency,
+      date: Dates.today(),
+      categoryId: Finance.defaultCategoryId(),
+      paymentMethod: "",
+      recurring: false,
     };
     const plan = existing?.installmentId && st.installments.find(p => p.id === existing.installmentId);
-    const origin = existing?.subscriptionId ? "Lo registró la app cuando se cobró la suscripción."
-      : existing?.installmentId ? `Es la cuota ${existing.installmentN} de ${existing.installmentCount}${plan ? ` de “${plan.description}”. Para cambiar la compra, andá a Más → Cuotas` : ""}.`
-      : existing?.templateId ? "Lo generó la app a partir de un gasto mensual." : "";
+    const origin = existing?.subscriptionId
+      ? "Lo registró la app cuando se cobró la suscripción."
+      : existing?.installmentId
+        ? `Es la cuota ${existing.installmentN} de ${existing.installmentCount}${plan ? ` de “${plan.description}”. Para cambiar la compra, andá a Más → Cuotas` : ""}.`
+        : existing?.templateId
+          ? "Lo generó la app a partir de un gasto mensual."
+          : "";
     const cuotaOptions = [[1, "Un pago"], ...[2, 3, 4, 5, 6, 9, 10, 12, 18, 24].map(n => [n, `${n} cuotas`])];
 
     Modal.open({
@@ -74,39 +86,65 @@ export const MovementsForms = {
           const currency = $('select[name="currency"]', form).value;
           const method = $('input[name="paymentMethod"]', form);
           if (n > 1 && method && !method.value) method.value = "Tarjeta de crédito";
-          hint.textContent = n > 1
-            ? `${n} cuotas${total ? ` de ${Money.format(total / n, currency)}` : ""}. La primera queda en la fecha elegida y las demás se cargan solas cada mes.`
-            : "";
+          hint.textContent =
+            n > 1
+              ? `${n} cuotas${total ? ` de ${Money.format(total / n, currency)}` : ""}. La primera queda en la fecha elegida y las demás se cargan solas cada mes.`
+              : "";
         };
         form.addEventListener("input", update);
         form.addEventListener("change", update);
       },
-      onDelete: existing && (() => Store.commitWithUndo(`Eliminaste “${existing.description}”.`, state => {
-        state.expenses = state.expenses.filter(x => x.id !== id);
-      })),
+      onDelete:
+        existing &&
+        (() =>
+          Store.commitWithUndo(`Eliminaste “${existing.description}”.`, state => {
+            state.expenses = state.expenses.filter(x => x.id !== id);
+          })),
       onSubmit: data => {
         const values = {
-          description: data.description.trim(), amount: toNumber(data.amount), currency: data.currency, date: data.date,
-          categoryId: data.categoryId, paymentMethod: data.paymentMethod.trim(), recurring: data.recurring === "on",
+          description: data.description.trim(),
+          amount: toNumber(data.amount),
+          currency: data.currency,
+          date: data.date,
+          categoryId: data.categoryId,
+          paymentMethod: data.paymentMethod.trim(),
+          recurring: data.recurring === "on",
           ...(data.cardTax === "on" && data.currency !== "ARS" ? { cardTax: true } : {}),
         };
         const count = Number(data.cuotas) || 1;
         if (!existing && count > 1) {
           Store.commit(state => {
-            state.installments.push(Schema.installment({
-              id: uid(), description: values.description, amount: Math.round((values.amount / count) * 100) / 100, count,
-              currency: values.currency, firstDate: values.date, categoryId: values.categoryId,
-              paymentMethod: values.paymentMethod || "Tarjeta de crédito", cardTax: values.cardTax, done: 0,
-            }, { ids: new Set(state.categories.map(c => c.id)), fallback: Finance.defaultCategoryId() }));
+            state.installments.push(
+              Schema.installment(
+                {
+                  id: uid(),
+                  description: values.description,
+                  amount: Math.round((values.amount / count) * 100) / 100,
+                  count,
+                  currency: values.currency,
+                  firstDate: values.date,
+                  categoryId: values.categoryId,
+                  paymentMethod: values.paymentMethod || "Tarjeta de crédito",
+                  cardTax: values.cardTax,
+                  done: 0,
+                },
+                { ids: new Set(state.categories.map(c => c.id)), fallback: Finance.defaultCategoryId() },
+              ),
+            );
             Finance.settle();
           });
-          Toast.show(`Cargaste ${values.description} en ${count} cuotas de ${Money.format(values.amount / count, values.currency)}.`, { actionLabel: "Ver cuotas", onAction: () => Router.go("cuotas") });
+          Toast.show(
+            `Cargaste ${values.description} en ${count} cuotas de ${Money.format(values.amount / count, values.currency)}.`,
+            { actionLabel: "Ver cuotas", onAction: () => Router.go("cuotas") },
+          );
           return;
         }
         Store.commit(state => {
           if (existing) {
             const target = state.expenses.find(x => x.id === id);
-            Object.assign(target, values, { recurring: values.recurring && !target.templateId && !target.subscriptionId && !target.installmentId });
+            Object.assign(target, values, {
+              recurring: values.recurring && !target.templateId && !target.subscriptionId && !target.installmentId,
+            });
             if (!values.cardTax) delete target.cardTax;
             delete target.demo;
           } else {
@@ -114,7 +152,11 @@ export const MovementsForms = {
           }
           Finance.settle();
         });
-        Toast.show(existing ? "Gasto actualizado." : `Registraste ${Money.format(values.amount, values.currency)} en ${values.description}.`);
+        Toast.show(
+          existing
+            ? "Gasto actualizado."
+            : `Registraste ${Money.format(values.amount, values.currency)} en ${values.description}.`,
+        );
       },
     });
   },
@@ -123,7 +165,14 @@ export const MovementsForms = {
     const st = Store.state;
     const existing = id ? st.incomes.find(i => i.id === id) : null;
     if (id && !existing) return;
-    const i = existing ?? { description: "", amount: "", currency: st.settings.baseCurrency, date: Dates.today(), sourceId: "sueldo", recurring: false };
+    const i = existing ?? {
+      description: "",
+      amount: "",
+      currency: st.settings.baseCurrency,
+      date: Dates.today(),
+      sourceId: "sueldo",
+      recurring: false,
+    };
     Modal.open({
       title: existing ? "Editar ingreso" : "Nuevo ingreso",
       description: existing?.templateId ? "Lo generó la app a partir de un ingreso fijo mensual." : "",
@@ -139,13 +188,20 @@ export const MovementsForms = {
       </div>${QuickEntry.descriptionsDatalist(st.incomes)}`,
       focus: existing ? null : 'input[name="amount"]',
       onReady: form => QuickEntry.wire(form, "income", st.incomes),
-      onDelete: existing && (() => Store.commitWithUndo(`Eliminaste “${existing.description}”.`, state => {
-        state.incomes = state.incomes.filter(x => x.id !== id);
-      })),
+      onDelete:
+        existing &&
+        (() =>
+          Store.commitWithUndo(`Eliminaste “${existing.description}”.`, state => {
+            state.incomes = state.incomes.filter(x => x.id !== id);
+          })),
       onSubmit: data => {
         const values = {
-          description: data.description.trim(), amount: toNumber(data.amount), currency: data.currency,
-          date: data.date, sourceId: data.sourceId, recurring: data.recurring === "on",
+          description: data.description.trim(),
+          amount: toNumber(data.amount),
+          currency: data.currency,
+          date: data.date,
+          sourceId: data.sourceId,
+          recurring: data.recurring === "on",
         };
         Store.commit(state => {
           if (existing) {
@@ -157,7 +213,11 @@ export const MovementsForms = {
           }
           Finance.settle();
         });
-        Toast.show(existing ? "Ingreso actualizado." : `Registraste un ingreso de ${Money.format(values.amount, values.currency)}.`);
+        Toast.show(
+          existing
+            ? "Ingreso actualizado."
+            : `Registraste un ingreso de ${Money.format(values.amount, values.currency)}.`,
+        );
       },
     });
   },

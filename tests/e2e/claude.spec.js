@@ -2,7 +2,23 @@
 import { expect, test } from "@playwright/test";
 import { addExpense, app, mockClaude, watchErrors } from "./helpers.js";
 
-const VIEWS = ["inicio", "movimientos", "suscripciones", "informes", "mas", "cuotas", "compartidos", "inflacion", "pagos", "planear", "ajustes", "cambio", "datos", "cuenta", "categorias"];
+const VIEWS = [
+  "inicio",
+  "movimientos",
+  "suscripciones",
+  "informes",
+  "mas",
+  "cuotas",
+  "compartidos",
+  "inflacion",
+  "pagos",
+  "planear",
+  "ajustes",
+  "cambio",
+  "datos",
+  "cuenta",
+  "categorias",
+];
 
 async function open(context, store) {
   await mockClaude(context, store);
@@ -16,12 +32,22 @@ async function open(context, store) {
 test("abre y recorre todas las vistas en los dos temas, sin errores ni desbordes", async ({ context }) => {
   const { page, errors } = await open(context, new Map());
   for (const theme of ["dark", "light"]) {
-    await app(page, (n, t) => n.Store.commit(s => { s.settings.theme = t; }), theme);
+    await app(
+      page,
+      (n, t) =>
+        n.Store.commit(s => {
+          s.settings.theme = t;
+        }),
+      theme,
+    );
     await expect(page.locator("html")).toHaveAttribute("data-numo-theme", theme);
     for (const view of VIEWS) {
       await app(page, (n, v) => n.Router.go(v), view);
       await expect(page.locator(".page-title")).toBeVisible();
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${theme}/${view} sin scroll lateral`).toBe(true);
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+        `${theme}/${view} sin scroll lateral`,
+      ).toBe(true);
     }
   }
   expect(errors).toEqual([]);
@@ -47,13 +73,15 @@ test("un gasto en 12 cuotas registra la primera y programa el resto", async ({ c
 
 test("lo que cargás en un dispositivo aparece en el otro", async ({ browser }) => {
   const store = new Map();
-  const a = await browser.newContext(), b = await browser.newContext();
+  const a = await browser.newContext(),
+    b = await browser.newContext();
   const { page: one } = await open(a, store);
   await addExpense(one, { amount: "5000", description: "Desde el celular" });
   await expect.poll(() => [...store.values()].some(v => v.includes("Desde el celular"))).toBe(true);
   const { page: two } = await open(b, store);
   expect(await app(two, n => n.Store.state.expenses.some(e => e.description === "Desde el celular"))).toBe(true);
-  await a.close(); await b.close();
+  await a.close();
+  await b.close();
 });
 
 test("gastos compartidos: divide, calcula quién le paga a quién y arma el resumen", async ({ context }) => {
@@ -71,7 +99,9 @@ test("gastos compartidos: divide, calcula quién le paga a quién y arma el resu
   await expect(page.getByText("Sofía → Mateo")).toBeVisible();
   await expect(page.getByText("Martín → Mateo")).toBeVisible();
   // Sin portapapeles, el resumen se muestra para copiar a mano
-  await page.evaluate(() => { navigator.clipboard.writeText = () => Promise.reject(new Error("sin portapapeles")); });
+  await page.evaluate(() => {
+    navigator.clipboard.writeText = () => Promise.reject(new Error("sin portapapeles"));
+  });
   await page.getByRole("button", { name: "Mandar al grupo" }).click();
   await expect(page.locator("#share-text")).toHaveValue(/Sofía le pasa \$\s?30\.000 a Mateo/);
 });

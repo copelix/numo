@@ -6,7 +6,7 @@ import { createInitialState, Schema } from "../core/schema.js";
 import { Store } from "../core/store.js";
 import { Forms } from "../forms/index.js";
 import { Storage } from "../lib/storage.js";
-import { $$, asArray, } from "../lib/utils.js";
+import { $$, asArray } from "../lib/utils.js";
 import { Cloud } from "./cloud.js";
 import { Modal } from "../ui/modal.js";
 import { Toast } from "../ui/toast.js";
@@ -21,16 +21,16 @@ import { Toast } from "../ui/toast.js";
    "core" se escribe último: su updatedAt marca que el guardado terminó.
    ========================================================================= */
 export const Sync = {
-  mode: "connecting",      // connecting | cloud | local
-  status: "idle",          // idle | pending | syncing | synced | error
+  mode: "connecting", // connecting | cloud | local
+  status: "idle", // idle | pending | syncing | synced | error
   message: "",
   db: null,
   uid: null,
-  provider: null,          // "claude" | "numo"
+  provider: null, // "claude" | "numo"
   downloads: null,
-  loaded: false,           // no se sube nada hasta haber leído la cuenta
-  everWrote: false,        // si la primera escritura se rechaza, esta persona no puede guardar en la nube
-  written: new Map(),      // id del documento -> JSON guardado
+  loaded: false, // no se sube nada hasta haber leído la cuenta
+  everWrote: false, // si la primera escritura se rechaza, esta persona no puede guardar en la nube
+  written: new Map(), // id del documento -> JSON guardado
   timer: null,
   running: false,
   again: false,
@@ -60,7 +60,9 @@ export const Sync = {
     }
   },
 
-  ref(id) { return this.db.doc(`data/users/${this.uid}/${id}`); },
+  ref(id) {
+    return this.db.doc(`data/users/${this.uid}/${id}`);
+  },
 
   attachNumo() {
     this.db = Cloud.db();
@@ -75,13 +77,17 @@ export const Sync = {
     this.loaded = false;
     App.render();
     let remote = null;
-    try { remote = await this.load(); }
-    catch { /* start() vuelve a intentar y muestra el error */ }
+    try {
+      remote = await this.load();
+    } catch {
+      /* start() vuelve a intentar y muestra el error */
+    }
     let cache = { uid: null, state: Store.state };
     if (remote && Store.hasUserData()) {
       const choice = await Modal.choose({
         title: "¿Con qué datos seguís?",
-        message: "Tu cuenta ya tiene datos guardados, y en este dispositivo también hay. Elegí cuáles conservar: los otros se reemplazan.",
+        message:
+          "Tu cuenta ya tiene datos guardados, y en este dispositivo también hay. Elegí cuáles conservar: los otros se reemplazan.",
         options: [
           { value: "device", label: "Los de este dispositivo" },
           { value: "cloud", label: "Los de mi cuenta", variant: "primary" },
@@ -103,8 +109,11 @@ export const Sync = {
     this.unsubscribe = null;
     clearTimeout(this.timer);
     await Cloud.signOut();
-    this.db = null; this.uid = null; this.provider = null;
-    this.loaded = false; this.written.clear();
+    this.db = null;
+    this.uid = null;
+    this.provider = null;
+    this.loaded = false;
+    this.written.clear();
     Store.state = this.freshState();
     Storage.remove(CONFIG.cacheKey);
     this.startLocal(null);
@@ -159,7 +168,11 @@ export const Sync = {
     try {
       remote = await this.load();
     } catch (error) {
-      if (error?.code === "auth" && this.provider === "numo") { if (!Store.state) Store.state = this.freshState(); this.sessionLost(); return; }
+      if (error?.code === "auth" && this.provider === "numo") {
+        if (!Store.state) Store.state = this.freshState();
+        this.sessionLost();
+        return;
+      }
       this.setStatus("error", this.describe(error));
       if (!Store.state) Store.state = this.freshState();
       App.render();
@@ -175,7 +188,7 @@ export const Sync = {
     if (remote) {
       const remoteState = Schema.normalize(remote);
       if (local && localIsMine && local.meta.updatedAt > remoteState.meta.updatedAt) {
-        this.markClean(remoteState);      // cambios hechos sin conexión: ganan los de este dispositivo
+        this.markClean(remoteState); // cambios hechos sin conexión: ganan los de este dispositivo
         needsPush = true;
       } else {
         Store.state = remoteState;
@@ -188,14 +201,20 @@ export const Sync = {
 
     this.loaded = true;
     if (Finance.settle() || needsPush) Store.save({ render: false });
-    else { Store.persist(); this.setStatus("synced"); }
+    else {
+      Store.persist();
+      this.setStatus("synced");
+    }
     App.render();
     this.watch();
   },
 
   retryStart(cache) {
     if (this.loaded) return;
-    if (navigator.onLine === false) { setTimeout(() => this.retryStart(cache), 8000); return; }
+    if (navigator.onLine === false) {
+      setTimeout(() => this.retryStart(cache), 8000);
+      return;
+    }
     this.start(cache);
   },
 
@@ -209,10 +228,14 @@ export const Sync = {
   startLocal(cache) {
     this.mode = "local";
     if (!Store.state) Store.state = cache ? Schema.normalize(cache.state) : this.freshState();
-    if (!Finance.settle()) Store.persist(); else Store.save({ render: false });
+    if (!Finance.settle()) Store.persist();
+    else Store.save({ render: false });
     this.setStatus("idle");
     App.render();
-    if (!Storage.available) Toast.show("Estás en una vista previa: podés probar todo, pero los datos no se guardan al cerrar.", { duration: 7000 });
+    if (!Storage.available)
+      Toast.show("Estás en una vista previa: podés probar todo, pero los datos no se guardan al cerrar.", {
+        duration: 7000,
+      });
   },
 
   schedulePush() {
@@ -226,14 +249,17 @@ export const Sync = {
   async push() {
     clearTimeout(this.timer);
     if (this.mode !== "cloud" || !this.loaded) return;
-    if (this.running) { this.again = true; return; }
+    if (this.running) {
+      this.again = true;
+      return;
+    }
     this.running = true;
     this.setStatus("syncing");
     try {
       do {
         this.again = false;
         const docs = this.split(Store.state);
-        for (const id of this.written.keys()) if (!docs.has(id)) docs.set(id, null);   // meses que quedaron vacíos
+        for (const id of this.written.keys()) if (!docs.has(id)) docs.set(id, null); // meses que quedaron vacíos
         const order = [...docs.keys()].filter(id => id !== "core").concat("core");
         for (const id of order) {
           const body = docs.get(id);
@@ -253,8 +279,14 @@ export const Sync = {
     } catch (error) {
       // Quien abre una página compartida sin permiso de escritura recibe "invalid_argument"
       // en su primera escritura: sigue funcionando, guardando en su navegador.
-      if (error?.code === "invalid_argument" && !this.everWrote) { this.fallbackToLocal(); return; }
-      if (error?.code === "auth" && this.provider === "numo") { this.sessionLost(); return; }
+      if (error?.code === "invalid_argument" && !this.everWrote) {
+        this.fallbackToLocal();
+        return;
+      }
+      if (error?.code === "auth" && this.provider === "numo") {
+        this.sessionLost();
+        return;
+      }
       this.setStatus("error", this.describe(error));
       if (error?.code === "unavailable") setTimeout(() => this.push(), 4000 + Math.random() * 2000);
     } finally {
@@ -267,7 +299,11 @@ export const Sync = {
     Cloud.keep(null);
     this.provider = null;
     this.fallbackToLocal();
-    Toast.show("Tu sesión se cerró. Entrá de nuevo para seguir guardando en tu cuenta.", { actionLabel: "Entrar", onAction: () => Forms.auth("login"), duration: 9000 });
+    Toast.show("Tu sesión se cerró. Entrá de nuevo para seguir guardando en tu cuenta.", {
+      actionLabel: "Entrar",
+      onAction: () => Forms.auth("login"),
+      duration: 9000,
+    });
   },
 
   fallbackToLocal() {
@@ -284,14 +320,20 @@ export const Sync = {
   /** Escucha "core": si otro dispositivo guardó algo más nuevo, lo trae. */
   watch() {
     this.unsubscribe?.();
-    this.unsubscribe = this.ref("core").onSnapshot(snap => {
-      if (!snap.exists || snap.metadata.hasPendingWrites || this.running) return;
-      const at = Number(snap.data()?.meta?.updatedAt) || 0;
-      if (at > Store.state.meta.updatedAt) this.pullRemote();
-    }, error => {
-      if (error.code === "auth" && this.provider === "numo") { this.sessionLost(); return; }
-      if (error.code === "unavailable" && this.provider !== "numo") setTimeout(() => this.watch(), 5000);
-    });
+    this.unsubscribe = this.ref("core").onSnapshot(
+      snap => {
+        if (!snap.exists || snap.metadata.hasPendingWrites || this.running) return;
+        const at = Number(snap.data()?.meta?.updatedAt) || 0;
+        if (at > Store.state.meta.updatedAt) this.pullRemote();
+      },
+      error => {
+        if (error.code === "auth" && this.provider === "numo") {
+          this.sessionLost();
+          return;
+        }
+        if (error.code === "unavailable" && this.provider !== "numo") setTimeout(() => this.watch(), 5000);
+      },
+    );
   },
 
   async pullRemote() {
@@ -310,29 +352,41 @@ export const Sync = {
 
   describe(error) {
     switch (error?.code) {
-      case "quota_exceeded": return "se llenó el espacio de guardado. Exportá un respaldo y borrá gastos viejos.";
-      case "unavailable": return "sin conexión por ahora, se reintenta solo.";
-      case "revoked": return "se perdió el acceso a esta página. Volvé a abrirla.";
-      case "auth": return "tu sesión venció. Entrá de nuevo.";
-      default: return navigator.onLine === false ? "sin conexión a internet." : "error al guardar.";
+      case "quota_exceeded":
+        return "se llenó el espacio de guardado. Exportá un respaldo y borrá gastos viejos.";
+      case "unavailable":
+        return "sin conexión por ahora, se reintenta solo.";
+      case "revoked":
+        return "se perdió el acceso a esta página. Volvé a abrirla.";
+      case "auth":
+        return "tu sesión venció. Entrá de nuevo.";
+      default:
+        return navigator.onLine === false ? "sin conexión a internet." : "error al guardar.";
     }
   },
 
   setStatus(status, message = "") {
     this.status = status;
     this.message = message;
-    $$("[data-sync-status]").forEach(el => { el.textContent = this.statusLabel(); });
+    $$("[data-sync-status]").forEach(el => {
+      el.textContent = this.statusLabel();
+    });
   },
 
   statusLabel() {
     if (this.mode === "connecting") return "Conectando con tu cuenta…";
-    if (this.mode === "local") return Storage.available ? "Guardado solo en este navegador" : "Vista previa: los datos no se guardan";
+    if (this.mode === "local")
+      return Storage.available ? "Guardado solo en este navegador" : "Vista previa: los datos no se guardan";
     const where = this.provider === "numo" ? "Guardado en tu cuenta de Numo" : "Guardado en tu cuenta de Claude";
     switch (this.status) {
-      case "pending": return "Cambios por guardar…";
-      case "syncing": return "Guardando…";
-      case "error": return `No se pudo guardar: ${this.message}`;
-      default: return where;
+      case "pending":
+        return "Cambios por guardar…";
+      case "syncing":
+        return "Guardando…";
+      case "error":
+        return `No se pudo guardar: ${this.message}`;
+      default:
+        return where;
     }
   },
 };

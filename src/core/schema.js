@@ -1,4 +1,14 @@
-import { CONFIG, CURRENCIES, DEFAULT_CARD_TAX, DEFAULT_CATEGORIES, DEFAULT_RATES, FREQUENCIES, INCOME_SOURCES, STATUSES, USAGE } from "../config.js";
+import {
+  CONFIG,
+  CURRENCIES,
+  DEFAULT_CARD_TAX,
+  DEFAULT_CATEGORIES,
+  DEFAULT_RATES,
+  FREQUENCIES,
+  INCOME_SOURCES,
+  STATUSES,
+  USAGE,
+} from "../config.js";
 import { Dates } from "../lib/dates.js";
 import { asArray, clamp, deepClone, isHexColor, toNumber, uid } from "../lib/utils.js";
 import { Theme } from "../ui/theme.js";
@@ -10,7 +20,16 @@ export function createInitialState() {
   return {
     version: CONFIG.schemaVersion,
     meta: { updatedAt: 0 },
-    settings: { baseCurrency: "ARS", monthlyBudget: 900000, remindDays: 3, autoLogSubscriptions: true, theme: "system", cardTax: DEFAULT_CARD_TAX, ipc: {}, rates: { ...DEFAULT_RATES } },
+    settings: {
+      baseCurrency: "ARS",
+      monthlyBudget: 900000,
+      remindDays: 3,
+      autoLogSubscriptions: true,
+      theme: "system",
+      cardTax: DEFAULT_CARD_TAX,
+      ipc: {},
+      rates: { ...DEFAULT_RATES },
+    },
     categories: deepClone(DEFAULT_CATEGORIES),
     subscriptions: [],
     incomes: [],
@@ -24,7 +43,8 @@ export function createInitialState() {
 /** Lleva una fecha pasada al primer cobro igual o posterior a hoy, sin registrar nada. */
 export function nextOnOrAfter(date, frequency, anchorDay, reference = Dates.today()) {
   let current = date;
-  for (let guard = 0; current < reference && guard < 1000; guard++) current = Dates.addPeriod(current, frequency, anchorDay);
+  for (let guard = 0; current < reference && guard < 1000; guard++)
+    current = Dates.addPeriod(current, frequency, anchorDay);
   return current;
 }
 export const Schema = {
@@ -36,17 +56,20 @@ export const Schema = {
 
     const settings = { ...base.settings, ...(src.settings ?? {}) };
     settings.rates = { ...DEFAULT_RATES, ...(src.settings?.rates ?? {}) };
-    for (const c of CURRENCIES) settings.rates[c] = toNumber(settings.rates[c]) > 0 ? toNumber(settings.rates[c]) : DEFAULT_RATES[c];
+    for (const c of CURRENCIES)
+      settings.rates[c] = toNumber(settings.rates[c]) > 0 ? toNumber(settings.rates[c]) : DEFAULT_RATES[c];
     settings.rates.USD = 1;
     if (!CURRENCIES.includes(settings.baseCurrency)) settings.baseCurrency = "ARS";
     settings.monthlyBudget = Math.max(0, toNumber(settings.monthlyBudget));
     settings.remindDays = [1, 3, 7].includes(Number(settings.remindDays)) ? Number(settings.remindDays) : 3;
     settings.autoLogSubscriptions = settings.autoLogSubscriptions !== false;
     settings.theme = Theme.OPTIONS.some(([v]) => v === settings.theme) ? settings.theme : "system";
-    settings.cardTax = src.settings?.cardTax === undefined ? DEFAULT_CARD_TAX : clamp(toNumber(settings.cardTax), 0, 200);
+    settings.cardTax =
+      src.settings?.cardTax === undefined ? DEFAULT_CARD_TAX : clamp(toNumber(settings.cardTax), 0, 200);
     const ipc = {};
     for (const [key, value] of Object.entries(src.settings?.ipc ?? {})) {
-      if (/^\d{4}-\d{2}$/.test(key) && value !== "" && value !== null && Number.isFinite(Number(value))) ipc[key] = clamp(Number(value), -50, 100);
+      if (/^\d{4}-\d{2}$/.test(key) && value !== "" && value !== null && Number.isFinite(Number(value)))
+        ipc[key] = clamp(Number(value), -50, 100);
     }
     settings.ipc = ipc;
 
@@ -65,13 +88,25 @@ export const Schema = {
       meta: { updatedAt: Number(src.meta?.updatedAt) || 0 },
       settings,
       categories,
-      subscriptions: asArray(src.subscriptions).map(s => this.subscription(s, ctx)).filter(Boolean),
-      expenses: asArray(src.expenses).map(e => this.expense(e, ctx)).filter(Boolean),
-      goals: asArray(src.goals).map(g => this.goal(g)).filter(Boolean),
-      incomes: asArray(src.incomes).map(i => this.income(i)).filter(Boolean),
+      subscriptions: asArray(src.subscriptions)
+        .map(s => this.subscription(s, ctx))
+        .filter(Boolean),
+      expenses: asArray(src.expenses)
+        .map(e => this.expense(e, ctx))
+        .filter(Boolean),
+      goals: asArray(src.goals)
+        .map(g => this.goal(g))
+        .filter(Boolean),
+      incomes: asArray(src.incomes)
+        .map(i => this.income(i))
+        .filter(Boolean),
       categoryBudgets,
-      installments: asArray(src.installments).map(p => this.installment(p, ctx)).filter(Boolean),
-      shared: asArray(src.shared).map(x => this.sharedEvent(x)).filter(Boolean),
+      installments: asArray(src.installments)
+        .map(p => this.installment(p, ctx))
+        .filter(Boolean),
+      shared: asArray(src.shared)
+        .map(x => this.sharedEvent(x))
+        .filter(Boolean),
     };
   },
 
@@ -99,21 +134,36 @@ export const Schema = {
   /** Gasto compartido: la persona 0 sos vos. Cada gasto dice quién pagó y entre quiénes se divide. */
   sharedEvent(x) {
     if (!x || !String(x.name ?? "").trim()) return null;
-    const people = asArray(x.people).map(p => String(p ?? "").trim().slice(0, 30)).filter(Boolean).slice(0, 20);
+    const people = asArray(x.people)
+      .map(p =>
+        String(p ?? "")
+          .trim()
+          .slice(0, 30),
+      )
+      .filter(Boolean)
+      .slice(0, 20);
     if (people.length < 2) return null;
     const n = people.length;
-    const items = asArray(x.items).map(it => {
-      const amount = Math.max(0, toNumber(it?.amount));
-      if (!amount || !String(it?.description ?? "").trim()) return null;
-      const among = [...new Set(asArray(it.among).map(Number).filter(i => Number.isInteger(i) && i >= 0 && i < n))].sort((a, b) => a - b);
-      return {
-        id: String(it.id || uid()),
-        description: String(it.description).trim().slice(0, 60),
-        amount,
-        paidBy: clamp(Math.round(Number(it.paidBy) || 0), 0, n - 1),
-        among: among.length ? among : people.map((_, i) => i),
-      };
-    }).filter(Boolean);
+    const items = asArray(x.items)
+      .map(it => {
+        const amount = Math.max(0, toNumber(it?.amount));
+        if (!amount || !String(it?.description ?? "").trim()) return null;
+        const among = [
+          ...new Set(
+            asArray(it.among)
+              .map(Number)
+              .filter(i => Number.isInteger(i) && i >= 0 && i < n),
+          ),
+        ].sort((a, b) => a - b);
+        return {
+          id: String(it.id || uid()),
+          description: String(it.description).trim().slice(0, 60),
+          amount,
+          paidBy: clamp(Math.round(Number(it.paidBy) || 0), 0, n - 1),
+          among: among.length ? among : people.map((_, i) => i),
+        };
+      })
+      .filter(Boolean);
     return {
       id: String(x.id || uid()),
       name: String(x.name).trim().slice(0, 60),
@@ -177,11 +227,13 @@ export const Schema = {
       ...(e.calendarKey && e.recurring ? { calendarKey: String(e.calendarKey).slice(0, 80) } : {}),
       ...(e.templateId ? { templateId: String(e.templateId) } : {}),
       ...(e.subscriptionId ? { subscriptionId: String(e.subscriptionId) } : {}),
-      ...(e.installmentId ? {
-        installmentId: String(e.installmentId),
-        installmentN: clamp(Math.round(Number(e.installmentN) || 1), 1, 120),
-        installmentCount: clamp(Math.round(Number(e.installmentCount) || 1), 1, 120),
-      } : {}),
+      ...(e.installmentId
+        ? {
+            installmentId: String(e.installmentId),
+            installmentN: clamp(Math.round(Number(e.installmentN) || 1), 1, 120),
+            installmentCount: clamp(Math.round(Number(e.installmentCount) || 1), 1, 120),
+          }
+        : {}),
       ...(e.cardTax ? { cardTax: true } : {}),
       ...(e.demo ? { demo: true } : {}),
     };
@@ -226,14 +278,38 @@ export const Schema = {
         const anchorDay = Dates.isValid(x.next) ? Dates.dayOf(x.next) : 1;
         const nextDate = Dates.isValid(x.next) ? nextOnOrAfter(x.next, x.freq, anchorDay) : Dates.today();
         return {
-          id: x.id, name: x.name, amount: x.amount, currency: x.cur, frequency: x.freq, nextDate, anchorDay,
-          categoryId: x.cat, paymentMethod: x.pay, notes: x.notes, status: x.status, usage: x.usage, demo: x.demo,
-          priceHistory: x.prevAmount ? [{ date: Dates.today(), amount: x.prevAmount }, { date: Dates.today(), amount: x.amount }] : [],
+          id: x.id,
+          name: x.name,
+          amount: x.amount,
+          currency: x.cur,
+          frequency: x.freq,
+          nextDate,
+          anchorDay,
+          categoryId: x.cat,
+          paymentMethod: x.pay,
+          notes: x.notes,
+          status: x.status,
+          usage: x.usage,
+          demo: x.demo,
+          priceHistory: x.prevAmount
+            ? [
+                { date: Dates.today(), amount: x.prevAmount },
+                { date: Dates.today(), amount: x.amount },
+              ]
+            : [],
         };
       }),
       expenses: asArray(old.exps).map(x => ({
-        id: x.id, description: x.desc, amount: x.amount, currency: x.cur, date: x.date,
-        categoryId: x.cat, paymentMethod: x.pay, recurring: x.rec, templateId: x.parent, demo: x.demo,
+        id: x.id,
+        description: x.desc,
+        amount: x.amount,
+        currency: x.cur,
+        date: x.date,
+        categoryId: x.cat,
+        paymentMethod: x.pay,
+        recurring: x.rec,
+        templateId: x.parent,
+        demo: x.demo,
       })),
       goals: asArray(old.goals).map(g => ({ ...g, deadline: g.date })),
     };
