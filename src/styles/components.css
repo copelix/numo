@@ -776,6 +776,8 @@ form[aria-busy="true"] {
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  container-type: inline-size;
+  padding-top: 34px;
   margin-bottom: var(--gap);
 }
 .balance > *:not(.sphere) {
@@ -825,6 +827,7 @@ form[aria-busy="true"] {
   font: 400 var(--balance-value-size) / var(--balance-value-line) var(--font);
   letter-spacing: var(--balance-value-spacing);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .balance__row {
   display: grid;

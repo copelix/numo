@@ -40,7 +40,7 @@ export const InicioViews = {
           <p class="eyebrow" aria-live="polite">${isCurrent ? "Te queda este mes" : `Te quedó en ${monthLabel}`}</p>
           <button type="button" class="btn btn--icon btn--compact btn--ghost" data-action="home-month" data-value="1" aria-label="Mes siguiente"${attrs({ disabled: isCurrent })}>${icon("right", 18)}</button>
         </div>
-        <p class="balance__value" ${trusted(earned ? `data-count="${balance}"` : "")}>${earned ? Money.format(balance) : "—"}</p>
+        <p class="balance__value" style="--chars: ${earned ? Money.format(balance).length : 1}" ${trusted(earned ? `data-count="${balance}"` : "")}>${earned ? Money.format(balance) : "—"}</p>
         <div class="balance__row">
           <div><span class="small muted">Ingresos del mes</span><strong class="item__amount--in">${Money.format(earned)}</strong></div>
           <div><span class="small muted">Gastos del mes</span><strong>${Money.format(spent)}</strong></div>
