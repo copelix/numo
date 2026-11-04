@@ -1,9 +1,15 @@
 /* =========================================================================
-   1. TOKENS (DESIGN.md · estilo Raycast)
-   Lienzo casi negro, bordes finos, sombra "tecla" y el coral solo como marca.
+   TOKENS
+   Toda la diferencia entre los dos temas vive acá: los componentes leen
+   estas variables y se escriben una sola vez.
+   - Oscuro (por defecto): lienzo casi negro, bordes finos, sombra "tecla".
+   - Claro, "pergamino": lienzo pergamino, tinta casi negra, papel blanco,
+     sin sombras, tarjetas rectas y una sola tipografía.
    ========================================================================= */
 :root {
   color-scheme: dark;
+
+  /* ---- Color ---- */
   --canvas: #040506;
   --surface: #07080a;
   --surface-hover: #0c0d10;
@@ -12,33 +18,491 @@
   --line: #1f2022;
   --line-strong: #363739;
   --slate: #2f3031;
+  --stone: #17181b;
   --text: #ffffff;
   --text-2: #9c9c9d;
   --text-3: #6a6b6c;
   --mist: #e6e6e6;
-  --income: #59d499;
-  --chart-in: var(--income);
-  --chart-out: var(--mist);
   --iron: #454647;
+  --income: #59d499;
   --coral: #ff6363;
-  --logo: linear-gradient(255deg, rgb(250, 203, 14), rgb(240, 107, 168) 30%, rgb(120, 186, 230) 65%, #fff);
   --good: var(--income);
   --bad: #ff7b72;
+  --over: #ff7b72;
+  --warn: var(--coral);
   --ember: #452324;
   --ember-line: #6b3a3c;
+  --chart-in: var(--income);
+  --chart-out: var(--mist);
+  --logo: linear-gradient(255deg, rgb(250, 203, 14), rgb(240, 107, 168) 30%, rgb(120, 186, 230) 65%, #fff);
+  --sphere: var(--logo);
+  --accent: var(--mist);            /* foco, botón principal, barra actual */
+  --on-accent: var(--iron);
 
+  /* ---- Tipografía ---- */
   --font: "Inter", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --mono: "Geist Mono", "JetBrains Mono", ui-monospace, Menlo, Monaco, monospace;
   --num: "SF Pro Text", "Inter", system-ui, sans-serif;
+  --body-line: 1.5;
+  --body-spacing: normal;
+  --small: 13px;
+  --label-font: var(--mono);        /* etiquetas en mayúsculas: secciones, tablas, gráficos */
+  --label-spacing: .073em;
+  --label-color: var(--text-2);
+  --display-weight: 400;            /* títulos grandes */
+  --display-case: none;
 
+  /* ---- Forma ---- */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
-
+  --radius-control: var(--radius-sm);
+  --radius-bar: 6px 6px 2px 2px;
   --shadow-key: inset 0 1px 0 rgba(255, 255, 255, .05), inset 0 -1px 0 rgba(0, 0, 0, .2);
   --shadow-btn: inset 0 1px 0 rgba(255, 255, 255, .08), 0 0 0 1px var(--slate);
+  --gap: 16px;
+  --card-padding: 24px;
+  --card-padding-sm: 16px;
+  --card-border: 1px solid var(--line-strong);
 
+  /* ---- Barras de navegación ---- */
+  --bar-bg: rgba(7, 8, 10, .72);
+  --bar-blur: blur(24px) saturate(140%);
+  --tabbar-bg: rgba(7, 8, 10, .82);
   --tabbar-h: 68px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* ---- Controles ---- */
+  --btn-bg: rgba(255, 255, 255, .05);
+  --btn-bg-hover: rgba(255, 255, 255, .09);
+  --btn-fg: var(--text);
+  --btn-fg-hover: var(--text);
+  --btn-border: 0;
+  --btn-size: 14px;
+  --input-bg: rgba(255, 255, 255, .05);
+  --input-hover: var(--slate);
+  --input-focus-ring: 0 0 0 3px rgba(230, 230, 230, .14);
+  --placeholder: var(--text-2);
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%239c9c9d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  --date-icon: invert(1);
+  --date-icon-opacity: .55;
+  --backdrop: rgba(4, 5, 6, .75);
+  --backdrop-blur: blur(6px);
+}
+
+:root[data-numo-theme="light"] {
+  color-scheme: light;
+
+  --canvas: #e5e4e0;                /* pergamino */
+  --surface: #ffffff;               /* papel */
+  --surface-hover: #f4f3f0;
+  --recessed: #e5e4e0;
+  --badge: #e5e4e0;
+  --line: #bfbebe;                  /* ceniza */
+  --line-strong: #bfbebe;
+  --slate: #1d1d1d;
+  --stone: #cdcdc9;
+  --text: #1d1d1d;                  /* tinta */
+  --text-2: #5c5b57;
+  --text-3: #8a8984;
+  --mist: #1d1d1d;
+  --iron: #a3a29d;
+  --income: #1f7a4a;
+  --bad: #b42318;
+  --over: #b42318;
+  --warn: #9a5b00;
+  --chart-in: #1d1d1d;
+  --chart-out: #a3a29d;
+  --sphere: linear-gradient(255deg, rgb(250, 203, 14), rgb(240, 107, 168) 30%, rgb(120, 186, 230) 65%, rgb(255, 255, 255));
+  --accent: var(--text);
+  --on-accent: var(--canvas);
+
+  --font: "Inter", "Neue Haas Grotesk Display", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono: var(--font);
+  --num: var(--font);
+  --body-line: 1.4;
+  --body-spacing: .006em;
+  --small: 15px;
+  --label-font: var(--font);
+  --label-spacing: .05em;
+  --label-color: var(--text);
+  --display-weight: 400;
+  --display-case: uppercase;
+
+  --radius-sm: 10px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-control: 10px;
+  --radius-bar: 0;
+  --shadow-key: none;
+  --shadow-btn: none;
+  --gap: 19px;
+  --card-padding: 30px;
+  --card-padding-sm: 19px;
+  --card-border: 0;
+
+  --bar-bg: var(--canvas);
+  --bar-blur: none;
+  --tabbar-bg: var(--canvas);
+
+  --btn-bg: transparent;
+  --btn-bg-hover: var(--text);
+  --btn-fg: var(--text);
+  --btn-fg-hover: var(--canvas);
+  --btn-border: 1px solid var(--text);
+  --btn-size: 15px;
+  --input-bg: var(--canvas);
+  --input-hover: var(--text-3);
+  --input-focus-ring: none;
+  --placeholder: var(--text-3);
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%231d1d1d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  --date-icon: none;
+  --date-icon-opacity: .7;
+  --backdrop: rgba(29, 29, 29, .35);
+  --backdrop-blur: none;
+}
+
+/* =========================================================================
+   TOKENS DE COMPONENTES (mismo orden en los dos temas)
+   ========================================================================= */
+:root {
+  --underline-offset: 3px;
+  --page-head-gap: 24px;
+  --title-size: clamp(28px, 6vw, 32px);
+  --title-line: 1.15;
+  --title-spacing: .004em;
+  --page-sub-gap: 6px;
+  --page-sub-size: inherit;
+  --main-pad-mobile: 24px calc(var(--tabbar-h) + 48px + var(--safe-bottom));
+
+  --topbar-pad: 12px 0 0;
+  --topbar-inner-pad: 6px 6px 6px 16px;
+  --topbar-border-width: 1px;
+  --brand-size: 14px;
+  --brand-weight: 500;
+  --brand-spacing: normal;
+  --brand-case: none;
+  --brand-ring: var(--text-3);
+  --nav-size: 13px;
+  --nav-weight: 500;
+  --nav-spacing: normal;
+  --nav-case: none;
+  --nav-border: 0;
+  --nav-active-bg: rgba(255, 255, 255, .07);
+  --tabbar-inset: 8px;
+  --tabbar-pad: 4px;
+  --tabbar-border-width: 1px;
+  --tabbar-shadow: var(--shadow-key), 0 12px 40px rgba(0, 0, 0, .6);
+  --tabbar-size: 11px;
+  --tabbar-active-bg: rgba(255, 255, 255, .07);
+  --tabbar-active-fg: var(--text);
+
+  --card-title-size: 16px;
+  --card-title-spacing: normal;
+  --stat-size: 28px;
+  --stat-weight: 500;
+  --stat-line: 1.15;
+  --stat-spacing: .005em;
+  --stat-margin: 10px 0 6px;
+
+  --hero-bg:
+    radial-gradient(80% 120% at 100% 0%, rgba(255, 99, 99, .5), transparent 60%),
+    radial-gradient(100% 140% at 0% 100%, rgba(4, 63, 150, .7), rgba(6, 18, 37, .25) 60%),
+    var(--surface);
+  --hero-border: 1px solid var(--line-strong);
+  --hero-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
+  --hero-pad: 32px 24px;
+  --hero-glow: block;
+  --hero-big-size: clamp(44px, 12vw, 64px);
+  --hero-big-line: 1.05;
+  --hero-big-spacing: normal;
+  --hero-big-margin: 12px 0 8px;
+  --hero-badge-bg: rgba(0, 0, 0, .35);
+  --hero-badge-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
+
+  --primary-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 0 0 1px #000, 0 4px 4px rgba(0, 0, 0, .25);
+  --primary-bg-hover: #fff;
+  --primary-fg-hover: var(--iron);
+  --danger-bg: var(--ember);
+  --danger-fg: var(--text);
+  --danger-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 0 0 1px var(--ember-line);
+  --danger-bg-hover: #55292a;
+  --danger-fg-hover: var(--text);
+  --ghost-bg-hover: rgba(255, 255, 255, .05);
+
+  --badge-bg: var(--badge);
+  --badge-shadow: none;
+  --badge-radius: 6px;
+  --badge-spacing: .02em;
+  --badge-case: none;
+  --soon-bg: var(--ember);
+  --soon-fg: var(--text);
+  --soon-shadow: inset 0 0 0 1px var(--ember-line);
+
+  --list-gap: 8px;
+  --list-rule: 0;
+  --row-bg-default: var(--surface);
+  --item-bg: var(--surface);
+  --item-border: 1px solid var(--line);
+  --item-radius: var(--radius-md);
+  --item-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+  --item-pad: 12px;
+  --item-hover-bg: var(--surface-hover);
+  --soon-row-bg: linear-gradient(90deg, rgba(69, 35, 36, .95), rgba(69, 35, 36, .35));
+  --soon-row-border: var(--ember-line);
+  --soon-row-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+  --soon-row-pad-left: 12px;
+  --meta-size: 13px;
+  --link-avatar-bg: var(--badge);
+  --group-margin: 20px 4px 8px;
+  --group-first-top: 0;
+  --back-size: 14px;
+  --back-weight: 400;
+  --back-spacing: normal;
+
+  --meter-h: 8px;
+  --meter-warn: linear-gradient(90deg, var(--mist), var(--coral));
+  --meter-over: var(--coral);
+  --banner-bg: var(--ember);
+  --banner-border: 1px solid var(--ember-line);
+  --banner-shadow: none;
+  --info-bg: var(--recessed);
+  --info-shadow: none;
+
+  --seg-bg: var(--recessed);
+  --seg-border: var(--line);
+  --seg-pad: 4px;
+  --seg-size: 13px;
+  --seg-weight: 500;
+  --seg-on-bg: rgba(255, 255, 255, .12);
+  --seg-on-fg: var(--text);
+  --seg-on-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 0 0 1px var(--line-strong);
+
+  --field-size: 13px;
+  --field-color: var(--text-2);
+  --field-spacing: normal;
+  --hint-size: 13px;
+  --check-size: 14px;
+  --summary-color: var(--text-2);
+  --summary-size: 14px;
+  --summary-weight: 400;
+  --summary-spacing: normal;
+  --filters-pad: 2px 16px;
+  --code-font: var(--mono);
+  --code-radius: var(--radius-sm);
+
+  --modal-border: var(--line-strong);
+  --modal-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 24px 80px rgba(0, 0, 0, .7);
+  --modal-fallback: rgba(4, 5, 6, .8);
+  --modal-sheet-border: 1px 1px 0;
+  --modal-title-size: 20px;
+  --modal-title-size-sm: 20px;
+  --modal-title-weight: 500;
+  --modal-title-line: inherit;
+  --modal-title-spacing: .01em;
+  --toast-bg: var(--badge);
+  --toast-fg: inherit;
+  --toast-border: 1px solid var(--line-strong);
+  --toast-radius: var(--radius-md);
+  --toast-shadow: 0 12px 40px rgba(0, 0, 0, .6);
+  --toast-btn-fg: var(--text);
+  --toast-btn-border: 0;
+  --toast-btn-bg: var(--btn-bg);
+  --toast-btn-bg-hover: var(--btn-bg-hover);
+  --toast-btn-fg-hover: var(--text);
+  --empty-title-size: inherit;
+
+  --donut-value-weight: 500;
+  --radius-pair: 4px 4px 1px 1px;
+  --radius-day: var(--radius-sm);
+  --day-has-border: var(--line);
+  --meta-weight: 400;
+  --meta-font-size: 12px;
+  --meta-spacing: normal;
+  --chart-spacing: normal;
+  --chart-legend-size: 13px;
+  --chart-legend-weight: 400;
+  --chart-legend-color: var(--text-2);
+  --tip-border: var(--line-strong);
+  --pill-radius: 999px;
+  --chip-border: var(--line);
+
+  --balance-value-size: clamp(40px, 11vw, 56px);
+  --balance-value-line: 1.05;
+  --balance-value-spacing: .004em;
+  --balance-value-margin: 8px 0 16px;
+  --balance-row-size: 18px;
+  --sphere-display: none;
+}
+
+:root[data-numo-theme="light"] {
+  --underline-offset: 4px;
+  --page-head-gap: 32px;
+  --title-size: clamp(34px, 10vw, 76px);
+  --title-line: .85;
+  --title-spacing: .013em;
+  --page-sub-gap: 14px;
+  --page-sub-size: 15px;
+  --main-pad-mobile: 28px calc(var(--tabbar-h) + 40px + var(--safe-bottom));
+
+  --topbar-pad: 0;
+  --topbar-inner-pad: 10px 0;
+  --topbar-border-width: 0 0 1px;
+  --brand-size: 15px;
+  --brand-weight: 700;
+  --brand-spacing: .05em;
+  --brand-case: uppercase;
+  --brand-ring: var(--text);
+  --nav-size: 11px;
+  --nav-weight: 700;
+  --nav-spacing: .05em;
+  --nav-case: uppercase;
+  --nav-border: 1px solid transparent;
+  --nav-active-bg: transparent;
+  --tabbar-inset: 0px;
+  --tabbar-pad: 6px max(8px, env(safe-area-inset-left, 0px)) calc(6px + var(--safe-bottom)) max(8px, env(safe-area-inset-right, 0px));
+  --tabbar-border-width: 1px 0 0;
+  --tabbar-shadow: none;
+  --tabbar-size: 10.5px;
+  --tabbar-active-bg: var(--text);
+  --tabbar-active-fg: var(--canvas);
+
+  --card-title-size: 18px;
+  --card-title-spacing: .01em;
+  --stat-size: 34px;
+  --stat-weight: 400;
+  --stat-line: 1;
+  --stat-spacing: .013em;
+  --stat-margin: 14px 0 10px;
+
+  --hero-bg:
+    linear-gradient(var(--canvas) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, var(--canvas) 1px, transparent 1px) 0 0 / 24px 24px,
+    var(--surface);
+  --hero-border: 0;
+  --hero-shadow: none;
+  --hero-pad: 30px;
+  --hero-glow: none;
+  --hero-big-size: clamp(48px, 14vw, 90px);
+  --hero-big-line: .8;
+  --hero-big-spacing: .013em;
+  --hero-big-margin: 18px 0 14px;
+  --hero-badge-bg: var(--surface);
+  --hero-badge-shadow: none;
+
+  --primary-shadow: none;
+  --primary-bg-hover: transparent;
+  --primary-fg-hover: var(--text);
+  --danger-bg: transparent;
+  --danger-fg: var(--over);
+  --danger-shadow: none;
+  --danger-bg-hover: var(--over);
+  --danger-fg-hover: #fff;
+  --ghost-bg-hover: transparent;
+
+  --badge-bg: transparent;
+  --badge-shadow: inset 0 0 0 1px var(--line);
+  --badge-radius: 10px;
+  --badge-spacing: .05em;
+  --badge-case: uppercase;
+  --soon-bg: var(--text);
+  --soon-fg: var(--canvas);
+  --soon-shadow: none;
+
+  --list-gap: 0;
+  --list-rule: 1px solid var(--line);
+  --row-bg-default: var(--canvas);
+  --item-bg: transparent;
+  --item-border: 0;
+  --item-radius: 0;
+  --item-shadow: none;
+  --item-pad: 14px 4px;
+  --item-hover-bg: rgba(255, 255, 255, .55);
+  --soon-row-bg: transparent;
+  --soon-row-border: var(--line);
+  --soon-row-shadow: inset 3px 0 0 var(--text);
+  --soon-row-pad-left: 14px;
+  --meta-size: 14px;
+  --link-avatar-bg: var(--surface);
+  --group-margin: 28px 4px 10px;
+  --group-first-top: 28px;
+  --back-size: 11px;
+  --back-weight: 500;
+  --back-spacing: .05em;
+
+  --meter-h: 6px;
+  --meter-warn: var(--warn);
+  --meter-over: var(--over);
+  --banner-bg: var(--surface);
+  --banner-border: 0;
+  --banner-shadow: inset 3px 0 0 var(--text);
+  --info-bg: var(--surface);
+  --info-shadow: none;
+
+  --seg-bg: transparent;
+  --seg-border: var(--text);
+  --seg-pad: 3px;
+  --seg-size: 11px;
+  --seg-weight: 700;
+  --seg-on-bg: var(--text);
+  --seg-on-fg: var(--canvas);
+  --seg-on-shadow: none;
+
+  --field-size: 11px;
+  --field-color: var(--text);
+  --field-spacing: .05em;
+  --hint-size: 14px;
+  --check-size: 15px;
+  --summary-color: var(--text);
+  --summary-size: 11px;
+  --summary-weight: 700;
+  --summary-spacing: .05em;
+  --filters-pad: 4px 19px;
+  --code-font: ui-monospace, Menlo, monospace;
+  --code-radius: 0;
+
+  --modal-border: var(--text);
+  --modal-shadow: none;
+  --modal-fallback: rgba(29, 29, 29, .35);
+  --modal-sheet-border: 1px 0 0;
+  --modal-title-size: 34px;
+  --modal-title-size-sm: 28px;
+  --modal-title-weight: 400;
+  --modal-title-line: 1;
+  --modal-title-spacing: .013em;
+  --toast-bg: var(--text);
+  --toast-fg: var(--canvas);
+  --toast-border: 0;
+  --toast-radius: 10px;
+  --toast-shadow: none;
+  --toast-btn-fg: var(--canvas);
+  --toast-btn-border: 1px solid var(--canvas);
+  --toast-btn-bg: transparent;
+  --toast-btn-bg-hover: var(--canvas);
+  --toast-btn-fg-hover: var(--text);
+  --empty-title-size: 18px;
+
+  --donut-value-weight: 400;
+  --radius-pair: 0;
+  --radius-day: 0;
+  --day-has-border: transparent;
+  --meta-weight: 500;
+  --meta-font-size: 11px;
+  --meta-spacing: .05em;
+  --chart-spacing: .05em;
+  --chart-legend-size: 11px;
+  --chart-legend-weight: 500;
+  --chart-legend-color: var(--text);
+  --tip-border: var(--text);
+  --pill-radius: 10px;
+  --chip-border: var(--canvas);
+
+  --balance-value-size: clamp(52px, 15vw, 103px);
+  --balance-value-line: .8;
+  --balance-value-spacing: .013em;
+  --balance-value-margin: 18px 0 26px;
+  --balance-row-size: 20px;
+  --sphere-display: block;
 }

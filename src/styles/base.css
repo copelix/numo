@@ -10,7 +10,8 @@ body {
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   background: var(--canvas);
   color: var(--text);
-  font: 400 16px/1.5 var(--font);
+  font: 400 16px/var(--body-line) var(--font);
+  letter-spacing: var(--body-spacing);
   font-feature-settings: "calt", "kern", "liga", "ss03";
   -webkit-font-smoothing: antialiased;
 }
@@ -18,22 +19,22 @@ h1, h2, h3, p { margin: 0; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 a { color: inherit; }
-:focus-visible { outline: 2px solid var(--mist); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .icon { display: block; flex: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .skip-link {
   position: absolute; left: 16px; top: -64px; z-index: 100;
   padding: 8px 16px; border-radius: var(--radius-sm);
-  background: var(--mist); color: var(--iron); font-weight: 500; text-decoration: none;
+  background: var(--accent); color: var(--on-accent); font-weight: 500; text-decoration: none;
 }
 .skip-link:focus { top: 16px; }
 .muted { color: var(--text-2); }
-.small { font-size: 13px; }
+.small { font-size: var(--small); }
 .num { font-variant-numeric: tabular-nums; }
 .eyebrow {
-  font: 500 11px/1.4 var(--mono);
-  letter-spacing: .073em;
+  font: 500 11px/1.4 var(--label-font);
+  letter-spacing: var(--label-spacing);
   text-transform: uppercase;
-  color: var(--text-2);
+  color: var(--label-color);
 }
-.link { color: var(--text); text-underline-offset: 3px; }
+.link { color: var(--text); text-underline-offset: var(--underline-offset); }
