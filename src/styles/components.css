@@ -778,46 +778,34 @@ form[aria-busy="true"] {
   isolation: isolate;
   margin-bottom: var(--gap);
 }
-.balance > *:not(.sphere) {
-  position: relative;
-  z-index: 1;
-  text-shadow: var(--balance-text-shadow);
-}
-/* El logo de Numo (la esfera tornasolada) asomando en la esquina del saldo, en los dos temas. */
+/* El logo de Numo entero (esfera tornasolada con sus dos anillos), arriba del saldo, en los dos temas.
+   Medidas proporcionales al ícono de la app. */
 .sphere {
-  position: absolute;
-  z-index: 0;
-  top: -86px;
-  right: -96px;
-  width: clamp(190px, 50vw, 320px);
+  position: relative;
+  display: block;
+  width: 76px;
   aspect-ratio: 1;
+  margin: 18px auto 30px;
   border-radius: 50%;
   background: var(--logo);
-  animation:
-    sphereSpin 28s linear infinite,
-    sphereFloat 9s ease-in-out infinite;
+  animation: sphereSpin 28s linear infinite;
 }
 .sphere::before,
 .sphere::after {
   content: "";
   position: absolute;
   border-radius: 50%;
-  border: 1px solid var(--line);
+  border: 1.5px solid var(--logo-ring);
 }
 .sphere::before {
-  inset: -28px;
+  inset: -7px;
 }
 .sphere::after {
-  inset: -60px;
+  inset: -16px;
 }
 @keyframes sphereSpin {
   to {
     transform: rotate(360deg);
-  }
-}
-@keyframes sphereFloat {
-  50% {
-    translate: -10px 8px;
   }
 }
 .balance__value {
