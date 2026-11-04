@@ -12,7 +12,14 @@ export default defineConfig({
     reducedMotion: "reduce",
     serviceWorkers: "allow",
   },
-  projects: [{ name: "chromium", use: { browserName: "chromium" } }],
+  projects: [{
+    name: "chromium",
+    use: {
+      browserName: "chromium",
+      // Opcional: usar un Chromium ya instalado en vez del que descarga Playwright.
+      launchOptions: process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {},
+    },
+  }],
   webServer: {
     command: "npm run build && node scripts/serve.mjs",
     url: "http://localhost:4173",

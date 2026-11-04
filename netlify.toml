@@ -6,7 +6,7 @@
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "22"
+  NODE_VERSION = "24"
   # El navegador de las pruebas se guarda dentro de node_modules,
   # que Netlify reutiliza entre builds: no se descarga cada vez.
   PLAYWRIGHT_BROWSERS_PATH = "0"

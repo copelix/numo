@@ -57,7 +57,7 @@ scripts/    build de la versión de un solo archivo, service worker y servidor l
 
 ## Cómo correrla
 
-Necesitás Node 22 o más nuevo.
+Necesitás Node 24 o más nuevo (está en `.nvmrc`).
 
 ```bash
 npm install
