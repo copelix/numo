@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Numo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Registrá tus ingresos, gastos, suscripciones y cuotas del mes, y mirá tus próximos pagos." data-web-only>
+<meta name="theme-color" content="#040506">
+<meta name="color-scheme" content="dark light" data-web-only>
+<meta name="referrer" content="no-referrer" data-web-only>
+<link rel="manifest" href="/manifest.webmanifest" data-web-only>
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png" data-web-only>
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" data-web-only>
+<meta name="apple-mobile-web-app-capable" content="yes" data-web-only>
+<meta name="mobile-web-app-capable" content="yes" data-web-only>
+<meta name="apple-mobile-web-app-title" content="Numo" data-web-only>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap">
+<!-- Datos públicos de Supabase (solo en la web; en Claude se guarda en la cuenta de Claude) -->
+<script src="/config.js" data-web-only></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Saltar al contenido</a>
+
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="#/inicio" aria-label="Numo: ir al inicio"><span class="brand__mark" aria-hidden="true"></span>Numo</a>
+    <nav class="nav nav--top" aria-label="Secciones" data-nav></nav>
+    <button class="btn btn--primary btn--compact" type="button" id="topbar-add" data-action="new-entry" title="Agregar un gasto o un ingreso" aria-label="Agregar">
+      <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      <span class="btn__label">Agregar</span>
+    </button>
+  </div>
+</header>
+
+<main id="main" class="main" tabindex="-1"></main>
+
+<nav class="nav nav--tabbar" aria-label="Secciones" data-nav></nav>
+<dialog class="modal" id="modal" aria-labelledby="modal-title"></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="import-file" accept=".json,.csv,application/json,text/csv" hidden>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
