@@ -355,6 +355,7 @@ form[aria-busy="true"] { opacity: .6; pointer-events: none; }
 .meta { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 48px; font: var(--meta-weight) var(--meta-font-size)/1.6 var(--label-font); letter-spacing: var(--meta-spacing); text-transform: var(--nav-case); color: var(--text-2); }
 
 @media (prefers-reduced-motion: reduce) {
+  /* biome-ignore lint/complexity/noImportantStyles: quien pide menos movimiento tiene que ganarle a cualquier animación */
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
 
@@ -456,6 +457,7 @@ form[aria-busy="true"] { opacity: .6; pointer-events: none; }
 .chip-opt input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
 .chip-opt__icon { font-size: 20px; line-height: 1; }
 .chip-opt__text { max-width: 100%; overflow-wrap: anywhere; hyphens: auto; }
+/* biome-ignore lint/complexity/noImportantStyles: Chrome muestra la flecha de las sugerencias con estilo propio */
 input[list]::-webkit-calendar-picker-indicator { display: none !important; }
 .chip-opt:has(input:checked) { background: var(--text); border-color: var(--text); color: var(--canvas); }
 .chip-opt:has(input:focus-visible) { outline: 2px solid var(--text); outline-offset: 2px; }

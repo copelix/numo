@@ -6,7 +6,7 @@ import { createInitialState, Schema } from "../core/schema.js";
 import { Store } from "../core/store.js";
 import { Forms } from "../forms/index.js";
 import { Storage } from "../lib/storage.js";
-import { $$, asArray, uid } from "../lib/utils.js";
+import { $$, asArray, } from "../lib/utils.js";
 import { Cloud } from "./cloud.js";
 import { Modal } from "../ui/modal.js";
 import { Toast } from "../ui/toast.js";
@@ -76,7 +76,7 @@ export const Sync = {
     App.render();
     let remote = null;
     try { remote = await this.load(); }
-    catch (error) { /* start() vuelve a intentar y muestra el error */ }
+    catch { /* start() vuelve a intentar y muestra el error */ }
     let cache = { uid: null, state: Store.state };
     if (remote && Store.hasUserData()) {
       const choice = await Modal.choose({
@@ -303,7 +303,7 @@ export const Sync = {
       Store.persist();
       App.render();
       this.setStatus("synced");
-    } catch (error) {
+    } catch {
       /* se reintenta con el próximo aviso de cambios */
     }
   },

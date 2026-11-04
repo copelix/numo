@@ -46,12 +46,12 @@ export const Cloud = {
     let response;
     try {
       response = await fetch(url + path, { method, headers: h, body: body === undefined ? undefined : JSON.stringify(body), cache: "no-store" });
-    } catch (error) {
+    } catch {
       throw Object.assign(new Error("Sin conexión"), { code: "unavailable" });
     }
     const text = await response.text();
     let data = null;
-    try { data = text ? JSON.parse(text) : null; } catch (error) { data = null; }
+    try { data = text ? JSON.parse(text) : null; } catch { data = null; }
     if (!response.ok) {
       const code = response.status === 401 ? "auth"
         : response.status === 429 || response.status >= 500 ? "unavailable"
@@ -91,7 +91,7 @@ export const Cloud = {
   },
 
   async signOut() {
-    try { await this.request("/auth/v1/logout", { method: "POST" }); } catch (error) { /* igual se cierra en este dispositivo */ }
+    try { await this.request("/auth/v1/logout", { method: "POST" }); } catch { /* igual se cierra en este dispositivo */ }
     this.keep(null);
   },
 

@@ -38,7 +38,7 @@ export const MonthChart = {
   /** Escala "linda" para el eje: 0, paso, 2·paso… */
   niceMax(value) {
     if (value <= 0) return 1;
-    const step = Math.pow(10, Math.floor(Math.log10(value)));
+    const step = 10 ** Math.floor(Math.log10(value));
     const n = value / step;
     return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * step;
   },

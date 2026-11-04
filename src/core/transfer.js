@@ -7,7 +7,6 @@ import { Dates } from "../lib/dates.js";
 import { uid } from "../lib/utils.js";
 import { Backup } from "../sync/backup.js";
 import { Sync } from "../sync/sync.js";
-import { icon } from "../ui/icons.js";
 import { Modal } from "../ui/modal.js";
 import { Toast } from "../ui/toast.js";
 

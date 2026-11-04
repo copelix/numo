@@ -1,7 +1,6 @@
 import { CONFIG, CURRENCIES, DEFAULT_CARD_TAX, DEFAULT_CATEGORIES, DEFAULT_RATES, FREQUENCIES, INCOME_SOURCES, STATUSES, USAGE } from "../config.js";
 import { Dates } from "../lib/dates.js";
 import { asArray, clamp, deepClone, isHexColor, toNumber, uid } from "../lib/utils.js";
-import { icon } from "../ui/icons.js";
 import { Theme } from "../ui/theme.js";
 
 /* =========================================================================

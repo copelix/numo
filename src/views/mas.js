@@ -7,7 +7,6 @@ import { Store } from "../core/store.js";
 import { Dates } from "../lib/dates.js";
 import { html } from "../lib/html.js";
 import { Sync } from "../sync/sync.js";
-import { Calendar } from "../ui/calendar.js";
 import { UI } from "../ui/components.js";
 import { currencyOptions, Field } from "../ui/fields.js";
 import { icon } from "../ui/icons.js";

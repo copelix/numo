@@ -9,7 +9,7 @@ export const Persist = {
       if (!navigator.storage?.persist) return;
       if (await navigator.storage.persisted()) return;
       await navigator.storage.persist();
-    } catch (error) { /* no todos los navegadores lo permiten: no pasa nada */ }
+    } catch { /* no todos los navegadores lo permiten: no pasa nada */ }
   },
 };
 /** Recordatorio de copia para quien guarda solo en el navegador. */
@@ -26,7 +26,11 @@ export const Backup = {
     if (Date.now() - snoozed < 7 * day) return false;
     if (!last) {
       // primera vez: después de una semana de uso
-      const first = Number(Storage.read("numo:firstUse")) || (Storage.write("numo:firstUse", Date.now()), Date.now());
+      let first = Number(Storage.read("numo:firstUse"));
+      if (!first) {
+        first = Date.now();
+        Storage.write("numo:firstUse", first);
+      }
       return Date.now() - first > 7 * day;
     }
     return Date.now() - last > this.DAYS * day;

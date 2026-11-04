@@ -23,7 +23,7 @@ export const Gestures = {
       if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { this.row = null; return; }
       if (Math.abs(dx) < 12) return;
       r.active = true;
-      try { r.item.setPointerCapture(event.pointerId); } catch (error) { /* sin captura: sigue igual */ }
+      try { r.item.setPointerCapture(event.pointerId); } catch { /* sin captura: sigue igual */ }
       r.li.classList.add("is-swiping");
     }
     r.dx = Math.max(-150, Math.min(150, dx));
@@ -31,10 +31,10 @@ export const Gestures = {
     r.li.dataset.dir = r.dx < 0 ? "left" : "right";
     r.li.classList.toggle("is-armed", Math.abs(r.dx) >= this.THRESHOLD);
   },
-  rowUp(event) {
+  rowUp() {
     const r = this.row;
     this.row = null;
-    if (!r || !r.active) return;
+    if (!r?.active) return;
     r.item.dataset.swiped = "1";
     setTimeout(() => delete r.item.dataset.swiped, 50);
     const done = Math.abs(r.dx) >= this.THRESHOLD;
@@ -83,7 +83,7 @@ export const Gestures = {
     const down = event => {
       if (!matchMedia("(max-width: 520px)").matches) return;
       s = { id: event.pointerId, y0: event.clientY, dy: 0 };
-      try { event.currentTarget.setPointerCapture(event.pointerId); } catch (error) { /* nada */ }
+      try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* nada */ }
       dialog.style.transition = "none";
     };
     const move = event => {

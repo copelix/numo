@@ -47,7 +47,7 @@ export const App = {
     const active = document.activeElement;
     const focusId = active?.id && main.contains(active) ? active.id : null;
     let selection = null;
-    try { selection = focusId ? [active.selectionStart, active.selectionEnd] : null; } catch (error) { selection = null; }
+    try { selection = focusId ? [active.selectionStart, active.selectionEnd] : null; } catch { selection = null; }
 
     this.renderNav(view);
     main.innerHTML = String(html`${Views[view]()}${Views.footer()}`);
@@ -60,7 +60,7 @@ export const App = {
     if (focusId) {
       const el = document.getElementById(focusId);
       el?.focus({ preventScroll: true });
-      try { if (selection && selection[0] !== null) el.setSelectionRange(...selection); } catch (error) { /* campos sin selección */ }
+      try { if (selection && selection[0] !== null) el.setSelectionRange(...selection); } catch { /* campos sin selección */ }
     }
     if (resetScroll) {
       window.scrollTo(0, 0);

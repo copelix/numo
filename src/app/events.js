@@ -51,8 +51,8 @@ export function bindEvents() {
 
   document.addEventListener("pointerdown", event => { Gestures.rowDown(event); Gestures.monthDown(event); });
   document.addEventListener("pointermove", event => Gestures.rowMove(event), { passive: true });
-  document.addEventListener("pointerup", event => { Gestures.rowUp(event); Gestures.monthUp(event); });
-  document.addEventListener("pointercancel", event => { Gestures.rowUp(event); Gestures.month = null; });
+  document.addEventListener("pointerup", event => { Gestures.rowUp(); Gestures.monthUp(event); });
+  document.addEventListener("pointercancel", () => { Gestures.rowUp(); Gestures.month = null; });
 
   document.addEventListener("change", event => {
     const t = event.target;

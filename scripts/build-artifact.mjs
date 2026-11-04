@@ -12,6 +12,6 @@ const scripts = headTags.filter(t => t.startsWith("<script") && keep(t));
 const rest = headTags.filter(t => !t.startsWith("<script") && !t.startsWith("<!--") && keep(t));
 const markup = body.replace(/<script type="module"[^>]*src=[^>]*><\/script>/, "").trim();
 
-const page = [...rest, markup, ...scripts].join("\n") + "\n";
+const page = `${[...rest, markup, ...scripts].join("\n")}\n`;
 await writeFile(new URL("../dist-artifact/numo-claude.html", import.meta.url), page);
 console.log(`dist-artifact/numo-claude.html (${(page.length / 1024).toFixed(0)} KB)`);

@@ -49,7 +49,7 @@ test("crear cuenta, entrar en otro dispositivo y ver lo mismo", async ({ browser
   await app(one, n => n.Store.commit(s => n.Demo.remove(s)));
   await addExpense(one, { amount: "1500", description: "Antes de la cuenta" });
   await signUp(one, "mateo@ejemplo.com", "clave-segura-1");
-  await expect.poll(() => app(one, n => n.Sync.provider + "/" + n.Sync.status)).toBe("numo/synced");
+  await expect.poll(() => app(one, n => `${n.Sync.provider}/${n.Sync.status}`)).toBe("numo/synced");
   expect(JSON.stringify([...supabase.db.rows.values()])).toContain("Antes de la cuenta");
 
   const { page: two } = await open(b, supabase);

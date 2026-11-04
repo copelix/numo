@@ -65,7 +65,7 @@ export const QuickEntry = {
         const pm = $('input[name="paymentMethod"]', form);
         if (pm && x.paymentMethod) pm.value = x.paymentMethod;
       } else pickRadio("sourceId", x.sourceId);
-      $$(".recent", form).forEach(r => r.classList.toggle("is-picked", r === b));
+      for (const r of $$(".recent", form)) r.classList.toggle("is-picked", r === b);
       amount.focus({ preventScroll: true });
       amount.select?.();
     });

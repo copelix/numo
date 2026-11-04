@@ -22,7 +22,7 @@ export const Money = {
     if (!this.formatters.has(currency)) {
       try {
         this.formatters.set(currency, new Intl.NumberFormat("es-AR", { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: currency === "CLP" ? 0 : 2 }));
-      } catch (error) {
+      } catch {
         this.formatters.set(currency, { format: n => `${currency} ${n.toFixed(2)}` });
       }
     }

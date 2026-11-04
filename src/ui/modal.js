@@ -60,16 +60,18 @@ export const Modal = {
         submit();
       }
     });
-    $$("[data-modal-value]", dialog).forEach(button => button.addEventListener("click", () => {
-      const value = button.dataset.modalValue;
-      this.close(value);
-      if (value === "delete") onDelete?.();
-    }));
+    for (const button of $$("[data-modal-value]", dialog)) {
+      button.addEventListener("click", () => {
+        const value = button.dataset.modalValue;
+        this.close(value);
+        if (value === "delete") onDelete?.();
+      });
+    }
 
     this.onClose = onClose ?? null;
     try {
       dialog.showModal();
-    } catch (error) {
+    } catch {
       dialog.setAttribute("open", "");          // navegadores o marcos que no permiten showModal
       dialog.classList.add("modal--fallback");
     }

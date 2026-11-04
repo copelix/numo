@@ -2,7 +2,7 @@ import { App } from "../app/app.js";
 import { CONFIG } from "../config.js";
 import { Schema } from "./schema.js";
 import { Storage } from "../lib/storage.js";
-import { deepClone, uid } from "../lib/utils.js";
+import { deepClone, } from "../lib/utils.js";
 import { Sync } from "../sync/sync.js";
 import { Toast } from "../ui/toast.js";
 

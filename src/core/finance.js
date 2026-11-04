@@ -44,6 +44,7 @@ export const Finance = {
   nextRecurringDate(template, list = this.s.expenses) {
     const last = list
       .filter(e => e.templateId === template.id)
+      // biome-ignore lint/complexity/useMathMinMax: las fechas son textos AAAA-MM-DD, Math.max no sirve
       .reduce((max, e) => (e.date > max ? e.date : max), template.date);
     return Dates.addMonths(last, 1, Dates.dayOf(template.date));
   },

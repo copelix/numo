@@ -4,7 +4,6 @@ import { Dates } from "../lib/dates.js";
 import { html } from "../lib/html.js";
 import { isHexColor, toNumber, uid } from "../lib/utils.js";
 import { Field } from "../ui/fields.js";
-import { icon } from "../ui/icons.js";
 import { Modal } from "../ui/modal.js";
 import { Toast } from "../ui/toast.js";
 

@@ -12,7 +12,7 @@ export const Router = {
     try {
       const id = location.hash.replace(/^#\/?/, "");
       return this.isValid(id) ? id : null;
-    } catch (error) { return null; }
+    } catch { return null; }
   },
   current() {
     if (!this.route) this.route = this.fromURL() ?? "inicio";

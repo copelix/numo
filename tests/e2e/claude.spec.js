@@ -9,7 +9,7 @@ async function open(context, store) {
   const page = await context.newPage();
   const errors = await watchErrors(page);
   await page.goto("/");
-  await expect.poll(() => app(page, n => n.Sync.mode + "/" + n.Sync.status)).toBe("cloud/synced");
+  await expect.poll(() => app(page, n => `${n.Sync.mode}/${n.Sync.status}`)).toBe("cloud/synced");
   return { page, errors };
 }
 

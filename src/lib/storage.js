@@ -2,7 +2,7 @@
 export const Storage = {
   available: (() => {
     try { localStorage.setItem("__cc_test__", "1"); localStorage.removeItem("__cc_test__"); return true; }
-    catch (error) { return false; }
+    catch { return false; }
   })(),
   warned: false,
   read(key) {
@@ -17,6 +17,6 @@ export const Storage = {
   },
   remove(key) {
     if (!this.available) return;
-    try { localStorage.removeItem(key); } catch (error) { /* sin acceso: no hay nada que borrar */ }
+    try { localStorage.removeItem(key); } catch { /* sin acceso: no hay nada que borrar */ }
   },
 };

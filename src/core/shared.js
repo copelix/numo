@@ -74,7 +74,7 @@ export const Shared = {
       await navigator.clipboard.writeText(text);
       Toast.show("Copiamos el resumen: pegalo en el grupo de WhatsApp.");
       return;
-    } catch (error) { /* sin portapapeles: se muestra para copiar a mano */ }
+    } catch { /* sin portapapeles: se muestra para copiar a mano */ }
     Modal.open({
       title: "Resumen para compartir",
       description: "Copialo y pegalo en el grupo.",
