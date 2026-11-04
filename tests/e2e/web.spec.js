@@ -98,5 +98,5 @@ test("borrar la cuenta elimina los datos de la nube", async ({ context }) => {
   await page.locator('[data-modal-value="ok"]').click();
   await expect.poll(() => supabase.db.rows.size).toBe(0);
   expect(supabase.db.users.size).toBe(0);
-  expect(await app(page, n => n.Sync.mode)).toBe("local");
+  await expect.poll(() => app(page, n => n.Sync.mode)).toBe("local");
 });
