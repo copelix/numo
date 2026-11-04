@@ -102,9 +102,11 @@ export const Sync = {
     Toast.show(`Listo: tus datos se guardan en tu cuenta (${Cloud.email}).`);
   },
 
-  /** Cierra la sesión: los datos quedan en la cuenta y se borran de este dispositivo. */
-  async signOut() {
-    if (this.status === "pending") await this.push();
+  /** Cierra la sesión: los datos quedan en la cuenta y se borran de este dispositivo.
+      Con { push: false } no sube lo pendiente (por ejemplo, después de borrar la cuenta). */
+  async signOut({ push = true } = {}) {
+    if (push && this.status === "pending") await this.push();
+    this.paused = false;
     this.unsubscribe?.();
     this.unsubscribe = null;
     clearTimeout(this.timer);
@@ -238,8 +240,19 @@ export const Sync = {
       });
   },
 
+  /** Deja de subir cambios y espera a que termine lo que se estaba subiendo (antes de borrar la cuenta). */
+  async pause() {
+    this.paused = true;
+    clearTimeout(this.timer);
+    while (this.running) await new Promise(resolve => setTimeout(resolve, 50));
+  },
+  resume() {
+    this.paused = false;
+    if (this.status === "pending") this.schedulePush();
+  },
+
   schedulePush() {
-    if (this.mode !== "cloud" || !this.loaded) return;
+    if (this.mode !== "cloud" || !this.loaded || this.paused) return;
     clearTimeout(this.timer);
     this.setStatus("pending");
     this.timer = setTimeout(() => this.push(), 800);
@@ -248,7 +261,7 @@ export const Sync = {
   /** Sube solo los documentos que cambiaron, de a uno; "core" al final. */
   async push() {
     clearTimeout(this.timer);
-    if (this.mode !== "cloud" || !this.loaded) return;
+    if (this.mode !== "cloud" || !this.loaded || this.paused) return;
     if (this.running) {
       this.again = true;
       return;

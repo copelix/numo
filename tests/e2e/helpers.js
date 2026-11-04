@@ -6,6 +6,13 @@ import { expect } from "@playwright/test";
 export const app = (page, fn, arg) =>
   page.evaluate(`(${fn.toString()})(window.__numo, ${JSON.stringify(arg ?? null)})`);
 
+/** Lo que devuelve DolarAPI en las pruebas. */
+export const DOLAR = [
+  { moneda: "USD", casa: "oficial", venta: 1570, fechaActualizacion: "2026-11-03T18:55:00.000Z" },
+  { moneda: "USD", casa: "blue", venta: 1595, fechaActualizacion: "2026-11-04T11:55:00.000Z" },
+  { moneda: "USD", casa: "bolsa", venta: 1581.1, fechaActualizacion: "2026-11-04T11:55:00.000Z" },
+];
+
 /** Corta las tipografías de Google (no hay internet en las pruebas) y junta los errores de la página. */
 export async function watchErrors(page) {
   const errors = [];
@@ -16,6 +23,14 @@ export async function watchErrors(page) {
     else if (m.type() === "error" && !/fonts\.g|ERR_|net::|status of 40\d/.test(t)) errors.push(t);
   });
   await page.context().route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
+  // Cotización del dólar simulada (DolarAPI): las pruebas no dependen de internet ni del precio del día.
+  await page.context().route("https://dolarapi.com/**", r =>
+    r.fulfill({
+      contentType: "application/json",
+      headers: { "access-control-allow-origin": "*" },
+      body: JSON.stringify(DOLAR),
+    }),
+  );
   return errors;
 }
 

@@ -11,6 +11,14 @@ export const CONFIG = Object.freeze({
 export const CURRENCIES = ["ARS", "USD", "EUR", "BRL", "UYU", "CLP", "MXN", "GBP"];
 /* Valores de referencia editables en Ajustes: unidades de cada moneda por 1 USD. */
 export const DEFAULT_RATES = { USD: 1, ARS: 1450, EUR: 0.86, BRL: 5.4, UYU: 40, CLP: 950, MXN: 18.5, GBP: 0.75 };
+/* Cotización del dólar automática: DolarAPI es una fuente pública y gratuita de las cotizaciones argentinas. */
+export const DOLAR_API = "https://dolarapi.com/v1/dolares";
+export const DOLAR_SOURCES = [
+  ["oficial", "Automática: dólar oficial"],
+  ["bolsa", "Automática: dólar MEP"],
+  ["blue", "Automática: dólar blue"],
+  ["manual", "La cargo yo"],
+];
 /* Percepción de Ganancias al pagar en pesos con tarjeta en moneda extranjera (RG 5617/2024). Editable. */
 export const DEFAULT_CARD_TAX = 30;
 /* Inflación mensual en % (IPC nacional del INDEC). Se completa o corrige en Más → Inflación. */

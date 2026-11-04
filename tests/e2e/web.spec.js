@@ -106,3 +106,17 @@ test("borrar la cuenta elimina los datos de la nube", async ({ context }) => {
   expect(supabase.db.users.size).toBe(0);
   await expect.poll(() => app(page, n => n.Sync.mode)).toBe("local");
 });
+
+test("trae el dólar solo, respeta la política de seguridad y se puede cambiar a blue", async ({ context }) => {
+  const { page, errors } = await open(context);
+  await expect.poll(() => app(page, n => n.Store.state.settings.rates.ARS)).toBe(1570);
+  await app(page, n => n.Router.go("cambio"));
+  await expect(page.locator("[data-dolar-status]")).toContainText("Fuente: DolarAPI");
+  await expect(page.locator("#rate-ARS")).toBeDisabled();
+  await page.selectOption("#set-dolar", "blue");
+  await expect.poll(() => app(page, n => n.Store.state.settings.rates.ARS)).toBe(1595);
+  await expect(page.getByText("Con tarjeta siempre se usa el oficial.")).toBeVisible();
+  await page.selectOption("#set-dolar", "manual");
+  await expect(page.locator("#rate-ARS")).toBeEnabled();
+  expect(errors).toEqual([]);
+});

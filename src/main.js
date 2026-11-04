@@ -5,6 +5,7 @@ import * as appRouter from "./app/router.js";
 import * as appState from "./app/state.js";
 import * as config from "./config.js";
 import * as coreDemo from "./core/demo.js";
+import * as coreDolar from "./core/dolar.js";
 import * as coreFinance from "./core/finance.js";
 import * as coreInflation from "./core/inflation.js";
 import * as coreMoney from "./core/money.js";
@@ -57,6 +58,7 @@ import "./styles/layout.css";
 import "./styles/components.css";
 import { App } from "./app/app.js";
 import { bindEvents } from "./app/events.js";
+import { Dolar } from "./core/dolar.js";
 import { Schema } from "./core/schema.js";
 import { Store } from "./core/store.js";
 import { Persist } from "./sync/backup.js";
@@ -74,6 +76,7 @@ export async function boot() {
   // 2) Conectar con la cuenta de Claude; sin cuenta, queda guardado en este navegador
   if (await Sync.connect()) await Sync.start(cache);
   else Sync.startLocal(cache);
+  Dolar.refresh();
   if (typeof window.claude?.use !== "function") Persist.ask();
 }
 
@@ -87,6 +90,7 @@ window.__numo = Object.assign(
   appState,
   config,
   coreDemo,
+  coreDolar,
   coreFinance,
   coreInflation,
   coreMoney,

@@ -1,4 +1,4 @@
-import { CURRENCIES, ROUTES } from "../config.js";
+import { CURRENCIES, DOLAR_SOURCES, ROUTES } from "../config.js";
 import { Finance } from "../core/finance.js";
 import { Inflation } from "../core/inflation.js";
 import { Money } from "../core/money.js";
@@ -12,6 +12,21 @@ import { currencyOptions, Field } from "../ui/fields.js";
 import { icon } from "../ui/icons.js";
 import { Theme } from "../ui/theme.js";
 import { subHead, Views } from "./index.js";
+
+/** Nombre corto de la cotización elegida: "oficial", "MEP", "blue" o "manual". */
+function dolarLabel() {
+  return { oficial: "oficial", bolsa: "MEP", blue: "blue", manual: "manual" }[Store.state.settings.dolar.source];
+}
+/** "4 de nov., 08:55" a partir de la fecha que manda DolarAPI. */
+function quoteDate(iso) {
+  return new Intl.DateTimeFormat("es-AR", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(new Date(iso));
+}
 
 export const MasViews = {
   /* ---------- Más: menú con todo lo demás ---------- */
@@ -66,7 +81,7 @@ export const MasViews = {
           `Tema ${Theme.OPTIONS.find(([v]) => v === st.settings.theme)[1].toLowerCase()} · moneda ${st.settings.baseCurrency} · presupuesto ${st.settings.monthlyBudget ? Money.format(st.settings.monthlyBudget) : "sin definir"} · avisos`,
         ),
         entry("categorias", `${st.categories.length} categorías con su color e ícono`),
-        entry("cambio", `Dólar tarjeta (+${Money.cardTax()}%) y otras monedas`),
+        entry("cambio", `Dólar ${dolarLabel()}, dólar tarjeta (+${Money.cardTax()}%) y otras monedas`),
       ])}
       ${group("Tus datos", [entry("datos", "Exportar a Excel, importar, borrar los ejemplos")])}`;
   },
@@ -126,20 +141,44 @@ export const MasViews = {
 
   cambio() {
     const s = Store.state.settings;
+    const auto = s.dolar.source !== "manual";
+    const oficial = Money.rate("ARS", { card: true });
     return html`
       ${subHead({ title: "Tipos de cambio", subtitle: "Cuántas unidades de cada moneda equivalen a 1 dólar" })}
       <section class="card narrow">
-        <header class="card__head"><h2 class="card__title">Dólar tarjeta</h2>${s.baseCurrency === "ARS" && html`<span class="badge">${Money.format(s.rates.ARS * (1 + s.cardTax / 100))}</span>`}</header>
+        <header class="card__head"><h2 class="card__title">Dólar</h2>${auto && html`<span class="badge">${Money.format(s.rates.ARS, "ARS")}</span>`}</header>
+        <div class="form-grid">
+          ${Field.select({
+            label: "Cotización que usa Numo",
+            name: "dolarSource",
+            value: s.dolar.source,
+            options: DOLAR_SOURCES,
+            id: "set-dolar",
+            "data-setting": "dolarSource",
+            full: true,
+            hint: "Oficial: el del banco. MEP: el que comprás legal desde una cuenta de inversión. Blue: el informal.",
+          })}
+        </div>
+        <p class="small muted" style="margin-top:12px" data-dolar-status>${
+          auto
+            ? s.dolar.quoteAt
+              ? `Precio de venta, actualizado ${quoteDate(s.dolar.quoteAt)}. Se actualiza solo cada vez que abrís Numo. Fuente: DolarAPI.`
+              : "Todavía no pudimos traer la cotización: se actualiza sola cuando haya conexión."
+            : 'Lo cargás vos abajo, en "1 USD en ARS".'
+        }</p>
+      </section>
+      <section class="card narrow section">
+        <header class="card__head"><h2 class="card__title">Dólar tarjeta</h2>${s.baseCurrency === "ARS" && html`<span class="badge">${Money.format(Money.cardRate(), "ARS")}</span>`}</header>
         <p class="small muted" style="margin-bottom:12px">Cuando pagás en pesos algo en dólares con tarjeta (Spotify, iCloud, compras afuera), te cobran una percepción de Ganancias. Numo la suma en las suscripciones y gastos que tengan tildado "Lo pago con tarjeta en pesos". Si pagás el resumen con tus dólares, no se cobra: destildalo.</p>
         <div class="form-grid">
           ${Field.number({ label: "Impuestos de la tarjeta (%)", name: "cardTax", value: s.cardTax, id: "set-cardtax", "data-setting": "cardTax", hint: "Hoy es 30% (percepción de Ganancias, RG 5617)." })}
-          <p class="small muted" style="align-self:center">Oficial ${Money.format(s.rates.ARS, "ARS")} + ${s.cardTax}% = <strong>${Money.format(s.rates.ARS * (1 + s.cardTax / 100), "ARS")}</strong> por dólar.</p>
+          <p class="small muted" style="align-self:center">Oficial ${Money.format(oficial, "ARS")} + ${s.cardTax}% = <strong>${Money.format(Money.cardRate(), "ARS")}</strong> por dólar.${auto && s.dolar.source !== "oficial" ? " Con tarjeta siempre se usa el oficial." : ""}</p>
         </div>
       </section>
       <section class="card narrow section">
-        <p class="small muted" style="margin-bottom:16px">Se usan para pasar todo a tu moneda base (${s.baseCurrency}). Actualizalos cuando quieras.</p>
+        <p class="small muted" style="margin-bottom:16px">Se usan para pasar todo a tu moneda base (${s.baseCurrency}).${auto ? " El peso se actualiza solo; las demás monedas, cuando quieras." : " Actualizalos cuando quieras."}</p>
         <div class="form-grid">
-          ${CURRENCIES.filter(c => c !== "USD").map(c => Field.number({ label: `1 USD en ${c}`, name: `rate-${c}`, value: s.rates[c], id: `rate-${c}`, "data-rate": c, min: "0.0001" }))}
+          ${CURRENCIES.filter(c => c !== "USD").map(c => Field.number({ label: `1 USD en ${c}`, name: `rate-${c}`, value: s.rates[c], id: `rate-${c}`, "data-rate": c, min: "0.0001", disabled: auto && c === "ARS", hint: auto && c === "ARS" ? "Automático" : undefined }))}
         </div>
       </section>`;
   },

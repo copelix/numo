@@ -489,6 +489,10 @@
 .input:hover {
   border-color: var(--input-hover);
 }
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 .input:focus {
   outline: none;
   border-color: var(--accent);
@@ -774,9 +778,47 @@ form[aria-busy="true"] {
   isolation: isolate;
   margin-bottom: var(--gap);
 }
-.balance > * {
+.balance > *:not(.sphere) {
   position: relative;
   z-index: 1;
+  text-shadow: var(--balance-text-shadow);
+}
+/* El logo de Numo (la esfera tornasolada) asomando en la esquina del saldo, en los dos temas. */
+.sphere {
+  position: absolute;
+  z-index: 0;
+  top: -86px;
+  right: -96px;
+  width: clamp(190px, 50vw, 320px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--logo);
+  animation:
+    sphereSpin 28s linear infinite,
+    sphereFloat 9s ease-in-out infinite;
+}
+.sphere::before,
+.sphere::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+}
+.sphere::before {
+  inset: -28px;
+}
+.sphere::after {
+  inset: -60px;
+}
+@keyframes sphereSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes sphereFloat {
+  50% {
+    translate: -10px 8px;
+  }
 }
 .balance__value {
   margin: var(--balance-value-margin);

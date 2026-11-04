@@ -2,6 +2,7 @@ import { Actions } from "./actions.js";
 import { Router } from "./router.js";
 import { UIState } from "./state.js";
 import { DEFAULT_IPC, ROUTES } from "../config.js";
+import { Dolar } from "../core/dolar.js";
 import { Finance } from "../core/finance.js";
 import { Inflation } from "../core/inflation.js";
 import { Store } from "../core/store.js";
@@ -133,6 +134,15 @@ export const App = {
     else if (key === "remindDays") value = Number(input.value);
     else if (key === "cardTax") value = clamp(toNumber(input.value), 0, 200);
     else value = input.value;
+    if (key === "dolarSource") {
+      Store.commit(state => {
+        state.settings.dolar.source = value;
+      });
+      Dolar.refresh({ force: true }).then(ok => {
+        if (!ok && Dolar.isAuto()) Toast.show("No pudimos traer la cotización ahora: queda la última guardada.");
+      });
+      return;
+    }
     Store.commit(state => {
       state.settings[key] = value;
     });

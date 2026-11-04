@@ -4,6 +4,7 @@ import {
   DEFAULT_CARD_TAX,
   DEFAULT_CATEGORIES,
   DEFAULT_RATES,
+  DOLAR_SOURCES,
   FREQUENCIES,
   INCOME_SOURCES,
   STATUSES,
@@ -29,6 +30,7 @@ export function createInitialState() {
       cardTax: DEFAULT_CARD_TAX,
       ipc: {},
       rates: { ...DEFAULT_RATES },
+      dolar: { source: "oficial", oficial: 0, quoteAt: "" },
     },
     categories: deepClone(DEFAULT_CATEGORIES),
     subscriptions: [],
@@ -72,6 +74,12 @@ export const Schema = {
         ipc[key] = clamp(Number(value), -50, 100);
     }
     settings.ipc = ipc;
+    const dolar = src.settings?.dolar ?? {};
+    settings.dolar = {
+      source: DOLAR_SOURCES.some(([v]) => v === dolar.source) ? dolar.source : "oficial",
+      oficial: Math.max(0, toNumber(dolar.oficial)),
+      quoteAt: typeof dolar.quoteAt === "string" && !Number.isNaN(Date.parse(dolar.quoteAt)) ? dolar.quoteAt : "",
+    };
 
     const rawCategories = asArray(src.categories).length ? src.categories : base.categories;
     const categories = rawCategories.map(c => this.category(c));

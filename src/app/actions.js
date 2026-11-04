@@ -139,11 +139,13 @@ export const Actions = {
     });
     if (!ok) return;
     try {
+      await Sync.pause(); // que no se suba nada a una cuenta que se está borrando
       await Cloud.deleteAccount();
-      await Sync.signOut();
+      await Sync.signOut({ push: false });
       Router.go("inicio");
       Toast.show("Borramos tu cuenta y tus datos.");
     } catch (error) {
+      Sync.resume();
       Toast.show(
         error?.code === "unavailable"
           ? "Sin conexión: probá de nuevo cuando tengas internet."
