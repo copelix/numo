@@ -30,6 +30,6 @@ export const Theme = {
       meta.name = "theme-color";
       document.head.append(meta);
     }
-    meta.content = theme === "light" ? "#e5e4e0" : "#040506";
+    meta.content = theme === "light" ? "#f4f4f5" : "#040506";
   },
 };

@@ -774,7 +774,7 @@ form[aria-busy="true"] {
   isolation: isolate;
   margin-bottom: var(--gap);
 }
-.balance > *:not(.sphere) {
+.balance > * {
   position: relative;
   z-index: 1;
 }
@@ -1384,10 +1384,6 @@ form[aria-busy="true"] {
 }
 .mchart__key--budget {
   border-top: 1px dashed var(--text-2);
-}
-
-.sphere {
-  display: var(--sphere-display);
 }
 
 /* ---------- Movimiento ---------- */

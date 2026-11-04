@@ -55,7 +55,6 @@ import "./styles/base.css";
 import "./styles/navigation.css";
 import "./styles/layout.css";
 import "./styles/components.css";
-import "./styles/theme-light.css";
 import { App } from "./app/app.js";
 import { bindEvents } from "./app/events.js";
 import { Schema } from "./core/schema.js";

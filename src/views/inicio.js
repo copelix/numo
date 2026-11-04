@@ -34,7 +34,7 @@ export const InicioViews = {
       ${Views.saveBanner()}
       ${Views.demoBanner()}
 
-      <section class="card balance" aria-label="Balance del mes" data-swipe-month><span class="sphere" aria-hidden="true"></span>
+      <section class="card balance" aria-label="Balance del mes" data-swipe-month>
         <div class="balance__nav">
           <button type="button" class="btn btn--icon btn--compact btn--ghost" data-action="home-month" data-value="-1" aria-label="Mes anterior"${attrs({ disabled: offset <= -11 })}>${icon("left", 18)}</button>
           <p class="eyebrow" aria-live="polite">${isCurrent ? "Te queda este mes" : `Te quedó en ${monthLabel}`}</p>
