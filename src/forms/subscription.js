@@ -7,7 +7,7 @@ import { Dates } from "../lib/dates.js";
 import { attrs, html } from "../lib/html.js";
 import { toNumber, uid } from "../lib/utils.js";
 import { Calendar } from "../ui/calendar.js";
-import { categoryOptions, currencyOptions, Field, paymentDatalist } from "../ui/fields.js";
+import { categoryOptions, currencyOptions, Field } from "../ui/fields.js";
 import { Modal } from "../ui/modal.js";
 import { Toast } from "../ui/toast.js";
 
@@ -47,7 +47,7 @@ export const SubscriptionForms = {
         <details class="field--full more"${attrs({ open: Boolean(existing && (s.paymentMethod || s.notes || s.usage)) })}>
           <summary>Más opciones</summary>
           <div class="form-grid">
-            ${Field.input({ label: "Método de pago", name: "paymentMethod", value: s.paymentMethod, list: "payment-methods", autocomplete: "off" })}
+            ${Field.paymentMethod({ value: s.paymentMethod })}
             ${Field.select({ label: "¿Cuánto la usás?", name: "usage", value: s.usage, options: Object.entries(USAGE) })}
             ${Field.textarea({ label: "Notas", name: "notes", value: s.notes, maxlength: 300, rows: 2 })}
           </div>
@@ -60,7 +60,7 @@ export const SubscriptionForms = {
           ${Calendar.button(existing, "subscription")}
         </div>`
         }
-      </div>${paymentDatalist()}`,
+      </div>`,
       onReady: form => Field.wireCardTax(form),
       onDelete:
         existing &&

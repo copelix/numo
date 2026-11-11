@@ -40,18 +40,21 @@ export const Demo = {
       ],
     });
     sub("iCloud", 2.99, "USD", "mensual", 1, "tecnologia", "Tarjeta de crédito", { cardTax: true });
-    sub("Gimnasio", 45000, "ARS", "mensual", 9, "salud", "Débito", { usage: "bajo", notes: "Voy una vez por semana" });
+    sub("Gimnasio", 45000, "ARS", "mensual", 9, "salud", "Tarjeta de débito", {
+      usage: "bajo",
+      notes: "Voy una vez por semana",
+    });
     sub("Seguro de la moto", 25000, "ARS", "trimestral", 24, "transporte", "Transferencia", { usage: "" });
     sub("Hosting web", 120, "USD", "anual", 41, "tecnologia", "Tarjeta de crédito", { cardTax: true });
-    sub("Disney+", 9500, "ARS", "mensual", 16, "entretenimiento", "Mercado Pago", { status: "pausada" });
+    sub("Disney+", 9500, "ARS", "mensual", 16, "entretenimiento", "Billetera virtual", { status: "pausada" });
 
     const base = [
-      ["Supermercado", 68000, "comida", 4, "Débito"],
-      ["Supermercado", 54000, "comida", 18, "Débito"],
+      ["Supermercado", 68000, "comida", 4, "Tarjeta de débito"],
+      ["Supermercado", 54000, "comida", 18, "Tarjeta de débito"],
       ["Salida con amigos", 26000, "comida", 12, "Efectivo"],
-      ["Carga SUBE", 15000, "transporte", 2, "Débito"],
+      ["Carga SUBE", 15000, "transporte", 2, "Tarjeta de débito"],
       ["Nafta", 34000, "transporte", 22, "Tarjeta de crédito"],
-      ["Farmacia", 11500, "salud", 9, "Débito"],
+      ["Farmacia", 11500, "salud", 9, "Tarjeta de débito"],
     ];
     // Un año de gastos: los meses viejos, con los precios de ese momento (descontando la inflación)
     const variation = [1, 0.94, 1.08, 0.9, 1.03, 0.86, 0.97, 1.05, 0.92, 1.01, 0.95, 1.06, 0.93, 1.02];

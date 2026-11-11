@@ -8,7 +8,7 @@ import { Forms } from "./index.js";
 import { Dates } from "../lib/dates.js";
 import { attrs, html } from "../lib/html.js";
 import { $, toNumber, uid } from "../lib/utils.js";
-import { currencyOptions, Field, paymentDatalist } from "../ui/fields.js";
+import { currencyOptions, Field } from "../ui/fields.js";
 import { Modal } from "../ui/modal.js";
 import { QuickEntry } from "../ui/quick-entry.js";
 import { Toast } from "../ui/toast.js";
@@ -64,15 +64,15 @@ export const MovementsForms = {
         ${Field.input({ label: "Fecha", name: "date", type: "date", value: e.date, required: true, full: Boolean(existing) })}
         ${!existing && Field.select({ label: "Cuotas", name: "cuotas", value: 1, options: cuotaOptions, id: "exp-cuotas" })}
         <p class="hint-line field--full" data-cuotas-hint aria-live="polite"></p>
-        ${Field.cardTax(existing ? Boolean(e.cardTax) : true, e.currency)}
+        ${Field.cardTax(Boolean(e.cardTax), e.currency)}
         <details class="field--full more"${attrs({ open: Boolean(existing && (e.paymentMethod || e.recurring)) })}>
           <summary>Más opciones</summary>
           <div class="form-grid">
-            ${Field.input({ label: "Método de pago", name: "paymentMethod", value: e.paymentMethod, list: "payment-methods", autocomplete: "off", full: true })}
+            ${Field.paymentMethod({ value: e.paymentMethod, full: true })}
             ${!e.templateId && !e.subscriptionId && !e.installmentId && Field.checkbox({ label: "Se repite todos los meses (alquiler, expensas…)", name: "recurring", checked: e.recurring })}
           </div>
         </details>
-      </div>${paymentDatalist()}${QuickEntry.descriptionsDatalist(st.expenses)}`,
+      </div>${QuickEntry.descriptionsDatalist(st.expenses)}`,
       focus: existing ? null : 'input[name="amount"]',
       onReady: form => {
         QuickEntry.wire(form, "expense", st.expenses);
@@ -84,7 +84,7 @@ export const MovementsForms = {
           const n = Number(cuotas.value);
           const total = toNumber($('input[name="amount"]', form).value);
           const currency = $('select[name="currency"]', form).value;
-          const method = $('input[name="paymentMethod"]', form);
+          const method = $('select[name="paymentMethod"]', form);
           if (n > 1 && method && !method.value) method.value = "Tarjeta de crédito";
           hint.textContent =
             n > 1

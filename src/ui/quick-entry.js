@@ -73,7 +73,7 @@ export const QuickEntry = {
       $('input[name="description"]', form).value = x.description;
       if (kind === "expense") {
         pickRadio("categoryId", x.categoryId);
-        const pm = $('input[name="paymentMethod"]', form);
+        const pm = $('select[name="paymentMethod"]', form);
         if (pm && x.paymentMethod) pm.value = x.paymentMethod;
       } else pickRadio("sourceId", x.sourceId);
       for (const r of $$(".recent", form)) r.classList.toggle("is-picked", r === b);
@@ -90,7 +90,7 @@ export const QuickEntry = {
       if (!match) return;
       if (kind === "expense") {
         pickRadio("categoryId", match.categoryId);
-        const pm = $('input[name="paymentMethod"]', form);
+        const pm = $('select[name="paymentMethod"]', form);
         if (pm && !pm.value && match.paymentMethod) pm.value = match.paymentMethod;
       } else pickRadio("sourceId", match.sourceId);
     });

@@ -5,7 +5,7 @@ import { Store } from "../core/store.js";
 import { Dates } from "../lib/dates.js";
 import { html } from "../lib/html.js";
 import { $, toNumber, uid } from "../lib/utils.js";
-import { categoryOptions, currencyOptions, Field, paymentDatalist } from "../ui/fields.js";
+import { categoryOptions, currencyOptions, Field } from "../ui/fields.js";
 import { Modal } from "../ui/modal.js";
 import { Toast } from "../ui/toast.js";
 
@@ -39,9 +39,9 @@ export const InstallmentForms = {
         ${Field.input({ label: "Primera cuota", name: "firstDate", type: "date", value: p.firstDate, required: true, disabled: Boolean(started) })}
         <p class="hint-line field--full" data-plan-hint aria-live="polite"></p>
         ${Field.select({ label: "Categoría", name: "categoryId", value: p.categoryId, options: categoryOptions() })}
-        ${Field.input({ label: "Método de pago", name: "paymentMethod", value: p.paymentMethod, list: "payment-methods", autocomplete: "off" })}
+        ${Field.paymentMethod({ value: p.paymentMethod })}
         ${Field.cardTax(existing ? Boolean(p.cardTax) : true, p.currency)}
-      </div>${paymentDatalist()}`,
+      </div>`,
       focus: existing ? null : 'input[name="description"]',
       onReady: form => {
         Field.wireCardTax(form);
