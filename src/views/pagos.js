@@ -65,16 +65,16 @@ export const PagosViews = {
       <header class="card__head">
         <div><h2 class="card__title">Avisos en tu calendario</h2>
           <p class="small muted">${all.length ? (pending ? `${pending} de ${all.length} sin agendar` : "Todo agendado") : ""}</p></div>
-        ${icon("bell")}
+        ${all.length > 1 ? html`<button type="button" class="btn btn--compact" data-action="calendar-ics-all">${icon("calendar", 16)}Todos a Apple Calendar</button>` : icon("bell")}
       </header>
-      <p class="small muted" style="margin-bottom:16px">Agregá cada cobro a Google Calendar y te avisa el celular aunque no abras Numo. Se repite solo, con la misma frecuencia de la suscripción. Si después cambiás el monto o la fecha, el botón te avisa para actualizarlo.</p>
+      <p class="small muted" style="margin-bottom:16px">Agregá cada cobro a Google Calendar o a Apple Calendar y te avisa el celular aunque no abras Numo, el día anterior. Se repite solo, con la misma frecuencia de la suscripción. Si después cambiás el monto o la fecha, el botón te avisa para actualizarlo.</p>
       ${
         all.length
           ? html`<ul class="list">${all.map(
               ({ item, kind, name, meta }) => html`<li class="item item--wrap item--calendar">
             ${UI.avatar(Finance.category(item.categoryId))}
             <div class="item__body"><span class="item__title"><span>${name}</span></span><span class="item__meta">${Money.format(item.amount, item.currency)} · ${meta}</span></div>
-            ${Calendar.button(item, kind === "subscription" ? "subscription" : "fixed")}
+            ${Calendar.buttons(item, kind === "subscription" ? "subscription" : "fixed")}
           </li>`,
             )}</ul>`
           : UI.empty({

@@ -158,3 +158,34 @@ test("un gasto en dólares no suma el impuesto de la tarjeta salvo que elijas pa
   await method.selectOption("Efectivo");
   await expect(tax).not.toBeChecked();
 });
+
+test("agrega una suscripción a Apple Calendar con un archivo .ics", async ({ context }) => {
+  const { page, errors } = await open(context, new Map());
+  await app(page, n =>
+    n.Store.commit(state => {
+      state.subscriptions.push(
+        n.Schema.subscription(
+          {
+            id: "s-ics",
+            name: "Spotify",
+            amount: 4500,
+            currency: "ARS",
+            frequency: "mensual",
+            nextDate: n.Dates.today(),
+          },
+          { ids: new Set(state.categories.map(c => c.id)), fallback: n.Finance.defaultCategoryId() },
+        ),
+      );
+    }),
+  );
+  await app(page, n => n.Router.go("pagos"));
+  const download = page.waitForEvent("download");
+  await page.locator('[data-action="calendar-ics"][data-id="s-ics"]').click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("spotify.ics");
+  const text = await (await file.createReadStream()).toArray().then(c => Buffer.concat(c).toString("utf8"));
+  expect(text).toContain("SUMMARY:Pago de Spotify");
+  await expect(page.locator('[data-action="calendar-ics"][data-id="s-ics"]')).toContainText("Apple Calendar");
+  expect(await app(page, n => Boolean(n.Store.state.subscriptions.find(s => s.id === "s-ics").calendarKey))).toBe(true);
+  expect(errors).toEqual([]);
+});

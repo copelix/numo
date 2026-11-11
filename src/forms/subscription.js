@@ -57,7 +57,7 @@ export const SubscriptionForms = {
           existing.status === "activa" &&
           html`<div class="field--full more">
           <p class="small muted" style="margin:8px 0">Recibí un aviso en el celular antes de cada cobro.</p>
-          ${Calendar.button(existing, "subscription")}
+          ${Calendar.buttons(existing, "subscription")}
         </div>`
         }
       </div>`,
