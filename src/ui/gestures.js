@@ -1,4 +1,5 @@
 import { App } from "../app/app.js";
+import { Money } from "../core/money.js";
 import { Store } from "../core/store.js";
 import { Forms } from "../forms/index.js";
 import { $ } from "../lib/utils.js";
@@ -57,24 +58,29 @@ export const Gestures = {
     const action = r.item.dataset.action;
     const id = r.item.dataset.id;
     r.item.style.transition = "transform .25s ease";
-    if (done && r.dx < 0) {
-      r.item.style.transform = "translateX(-110%)";
-      setTimeout(() => this.removeRow(action, id), 200);
-      return;
-    }
     r.item.style.transform = "";
     setTimeout(() => {
       r.item.style.transition = "";
       r.li.classList.remove("is-swiping", "is-armed");
       delete r.li.dataset.dir;
     }, 260);
-    if (done && r.dx > 0) action === "edit-income" ? Forms.income(id) : Forms.expense(id);
+    if (!done) return;
+    if (r.dx > 0) action === "edit-income" ? Forms.income(id) : Forms.expense(id);
+    else this.removeRow(action, id);
   },
-  removeRow(action, id) {
+  /** Antes de borrar pregunta: deslizar sin querer es fácil. */
+  async removeRow(action, id) {
     const isIncome = action === "edit-income";
     const list = isIncome ? Store.state.incomes : Store.state.expenses;
     const item = list.find(x => x.id === id);
     if (!item) return App.render();
+    const sure = await Modal.confirm({
+      title: isIncome ? "¿Eliminar este ingreso?" : "¿Eliminar este gasto?",
+      message: `Vas a eliminar “${item.description}” por ${Money.format(item.amount, item.currency)}.`,
+      confirmLabel: "Eliminar",
+      danger: true,
+    });
+    if (!sure) return;
     Store.commitWithUndo(`Borraste “${item.description}”.`, state => {
       if (isIncome) state.incomes = state.incomes.filter(x => x.id !== id);
       else state.expenses = state.expenses.filter(x => x.id !== id);

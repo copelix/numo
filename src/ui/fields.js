@@ -52,7 +52,21 @@ export const Field = {
   cardTax(checked, currency) {
     return html`<label class="check field--full" data-cardtax${attrs({ hidden: currency === "ARS" })}><input type="checkbox" name="cardTax"${attrs({ checked })}><span>Lo pago con tarjeta en pesos (suma ${Money.cardTax()}% de impuestos)</span></label>`;
   },
-  /** Muestra u oculta el campo anterior cuando cambia la moneda. */
+  /** Método de pago: una lista con los habituales y los que ya usaste. */
+  paymentMethod({ value = "", full } = {}) {
+    const used = [...Store.state.subscriptions, ...Store.state.expenses, ...Store.state.installments]
+      .map(x => x.paymentMethod)
+      .filter(Boolean);
+    const all = [...new Set([...PAYMENT_METHODS, ...used, ...(value ? [value] : [])])];
+    return this.select({
+      label: "Método de pago",
+      name: "paymentMethod",
+      value,
+      options: [["", "Sin especificar"], ...all.map(m => [m, m])],
+      full,
+    });
+  },
+  /** Muestra u oculta el campo anterior cuando cambia la moneda, y lo marca solo si elegís pagar con tarjeta. */
   wireCardTax(form) {
     const currency = $('select[name="currency"]', form);
     const field = $("[data-cardtax]", form);
@@ -61,6 +75,9 @@ export const Field = {
       field.hidden = currency.value === "ARS";
     };
     currency.addEventListener("change", sync);
+    $('select[name="paymentMethod"]', form)?.addEventListener("change", e => {
+      $("input", field).checked = /tarjeta/i.test(e.target.value);
+    });
     form.addEventListener("click", () => setTimeout(sync, 0)); // los "recientes" cambian la moneda sin evento
   },
   checkbox({ label, name, checked, full = true, ...rest }) {
@@ -69,8 +86,3 @@ export const Field = {
 };
 export const currencyOptions = () => CURRENCIES.map(c => [c, c]);
 export const categoryOptions = () => Store.state.categories.map(c => [c.id, `${c.icon} ${c.name}`]);
-export function paymentDatalist() {
-  const used = [...Store.state.subscriptions, ...Store.state.expenses].map(x => x.paymentMethod).filter(Boolean);
-  const all = [...new Set([...PAYMENT_METHODS, ...used])];
-  return html`<datalist id="payment-methods">${all.map(m => html`<option value="${m}"></option>`)}</datalist>`;
-}

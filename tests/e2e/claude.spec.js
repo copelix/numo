@@ -114,3 +114,47 @@ test("cambia al tema claro desde Ajustes y lo recuerda", async ({ context }) => 
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-numo-theme", "light");
 });
+
+test("deslizar un gasto para borrarlo pregunta antes de eliminarlo", async ({ context }) => {
+  const { page } = await open(context, new Map());
+  await addExpense(page, { amount: "5000", description: "Kiosco" });
+  await app(page, n => n.Router.go("movimientos"));
+  const row = page.getByRole("button", { name: /Kiosco/ }).first();
+  const swipeLeft = async () => {
+    const box = await row.boundingBox();
+    const y = box.y + box.height / 2;
+    await page.mouse.move(box.x + box.width - 20, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width - 80, y, { steps: 4 });
+    await page.mouse.move(box.x + box.width - 160, y, { steps: 4 });
+    await page.mouse.up();
+  };
+  const count = () => app(page, n => n.Store.state.expenses.filter(e => e.description === "Kiosco").length);
+
+  await swipeLeft();
+  await expect(page.getByRole("heading", { name: "¿Eliminar este gasto?" })).toBeVisible();
+  await page.getByRole("button", { name: "Cancelar" }).click();
+  expect(await count()).toBe(1);
+
+  await swipeLeft();
+  await page.getByRole("button", { name: "Eliminar", exact: true }).click();
+  expect(await count()).toBe(0);
+});
+
+test("un gasto en dólares no suma el impuesto de la tarjeta salvo que elijas pagar con tarjeta", async ({
+  context,
+}) => {
+  const { page } = await open(context, new Map());
+  await app(page, n => n.Forms.expense());
+  await page.selectOption('select[name="currency"]', "USD");
+  const tax = page.locator('input[name="cardTax"]');
+  await expect(tax).toBeVisible();
+  await expect(tax).not.toBeChecked();
+  await page.getByText("Más opciones").click();
+  const method = page.locator('select[name="paymentMethod"]');
+  await expect(method.locator("option")).toContainText(["Efectivo", "Tarjeta de crédito", "Billetera virtual"]);
+  await method.selectOption("Tarjeta de crédito");
+  await expect(tax).toBeChecked();
+  await method.selectOption("Efectivo");
+  await expect(tax).not.toBeChecked();
+});

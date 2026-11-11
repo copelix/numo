@@ -74,7 +74,13 @@ export const INCOME_SOURCES = [
   { id: "regalos", name: "Regalos", icon: "🎁" },
   { id: "otros", name: "Otros", icon: "➕" },
 ];
-export const PAYMENT_METHODS = ["Efectivo", "Débito", "Tarjeta de crédito", "Transferencia", "Mercado Pago"];
+export const PAYMENT_METHODS = [
+  "Efectivo",
+  "Tarjeta de débito",
+  "Tarjeta de crédito",
+  "Billetera virtual",
+  "Transferencia",
+];
 export const DEFAULT_CATEGORIES = [
   { id: "entretenimiento", name: "Entretenimiento", icon: "🎬", color: "#ff6363" },
   { id: "salud", name: "Salud y deporte", icon: "💪", color: "#59d499" },

@@ -6,7 +6,16 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!!**/dist", "!!**/dist-artifact", "!docs", "!public/icons"]
+    "includes": [
+      "**",
+      "!!**/dist",
+      "!!**/dist-artifact",
+      "!docs",
+      "!public/icons",
+      "!.agents",
+      "!.claude",
+      "!skills-lock.json"
+    ]
   },
   "formatter": {
     "enabled": true,
