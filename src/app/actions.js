@@ -60,7 +60,7 @@ export const Actions = {
       const target = (kind === "subscription" ? state.subscriptions : state.expenses).find(x => x.id === id);
       if (target) target.calendarKey = Calendar.key(target);
     });
-    Toast.show("Abrí el archivo y tocá Agregar para agendar el cobro.");
+    Toast.show("Tocá Agregar para agendar el cobro en tu calendario.");
   },
   /** Todos los cobros en un solo .ics, para agregarlos de una vez. */
   "calendar-ics-all": async () => {
@@ -76,9 +76,7 @@ export const Actions = {
       for (const x of [...state.subscriptions, ...state.expenses])
         if (items.some(({ item }) => item.id === x.id)) x.calendarKey = Calendar.key(x);
     });
-    Toast.show(
-      `Abrí el archivo y tocá Agregar todo para agendar ${items.length} ${items.length === 1 ? "cobro" : "cobros"}.`,
-    );
+    Toast.show(`Tocá Agregar todo para agendar ${items.length} ${items.length === 1 ? "cobro" : "cobros"}.`);
   },
   "calendar-prev": () => {
     UIState.calendarOffset = Math.max(0, UIState.calendarOffset - 1);

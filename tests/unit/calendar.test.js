@@ -67,3 +67,17 @@ describe("archivo .ics para Apple Calendar", () => {
     expect(Calendar.rule("trimestral", 10)).toBe("FREQ=MONTHLY;INTERVAL=3");
   });
 });
+
+describe("qué calendario usa cada dispositivo", () => {
+  const nav = (userAgent, platform = "") => ({ userAgent, platform });
+  it("iPhone, iPad y Mac usan Calendario de Apple", () => {
+    expect(Calendar.platform(nav("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)", "iPhone"))).toBe("apple");
+    expect(Calendar.platform(nav("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)", "MacIntel"))).toBe("apple");
+    expect(Calendar.platform({ userAgent: "", userAgentData: { platform: "macOS" } })).toBe("apple");
+  });
+  it("Android y el resto usan Google Calendar", () => {
+    expect(Calendar.platform(nav("Mozilla/5.0 (Linux; Android 15; Pixel 9)", "Linux armv8l"))).toBe("google");
+    expect(Calendar.platform(nav("Mozilla/5.0 (Windows NT 10.0; Win64; x64)", "Win32"))).toBe("google");
+    expect(Calendar.platform(undefined)).toBe("google");
+  });
+});

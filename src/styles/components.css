@@ -372,24 +372,12 @@
   align-self: center;
   color: var(--text-2);
 }
-.calendar-actions {
-  display: flex;
+.item--calendar > .btn {
   flex: none;
-  flex-wrap: wrap;
-  gap: 8px;
 }
 @media (max-width: 520px) {
-  .item--calendar > .calendar-actions {
+  .item--calendar > .btn {
     width: 100%;
-  }
-  .calendar-actions {
-    flex-wrap: nowrap;
-  }
-  .calendar-actions > .btn {
-    flex: 1 1 0;
-  }
-  .calendar-actions__long {
-    display: none;
   }
 }
 .banner--info {

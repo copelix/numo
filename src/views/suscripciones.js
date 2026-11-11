@@ -56,7 +56,7 @@ export const SuscripcionesViews = {
         active.some(s => !Calendar.isAdded(s)) &&
         html`<a class="banner banner--info banner--link" href="#/pagos" data-scroll="calendario">${icon("bell")}<div>
         <strong>Recibí avisos en el celular</strong>
-        <p class="small muted">Agregá tus cobros a Google Calendar o Apple Calendar en un toque.</p>
+        <p class="small muted">Agregá tus cobros al calendario del celular en un toque.</p>
       </div>${icon("right", 18)}</a>`
       }
       ${

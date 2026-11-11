@@ -7,10 +7,10 @@ import { icon } from "./icons.js";
 
 /* =========================================================================
    RECORDATORIOS EN EL CALENDARIO
-   Sin conexiones. Google Calendar: un enlace que lo abre con el cobro ya cargado.
-   Apple Calendar (y Outlook o cualquier otro): un archivo .ics que el celular abre
-   y agrega. En los dos casos es un evento de día completo que se repite con la
-   frecuencia de la suscripción.
+   Sin conexiones, y según el dispositivo. En iPhone, iPad y Mac: un archivo .ics
+   que abre Calendario con el cobro listo para agregar. En Android y el resto: un
+   enlace que abre Google Calendar con el cobro ya cargado. En los dos casos es un
+   evento de día completo que se repite con la frecuencia de la suscripción.
    ========================================================================= */
 export const Calendar = {
   /** Regla de repetición (RRULE, sin el prefijo). Para días 29–31 usa el último día disponible del mes. */
@@ -112,24 +112,29 @@ export const Calendar = {
     return Boolean(item.calendarKey) && item.calendarKey === this.key(item);
   },
 
-  /** Los dos botones: Google Calendar (enlace) y Apple Calendar (archivo .ics). */
-  buttons(item, kind) {
+  /**
+   * ¿Qué calendario usa este dispositivo? iPhone, iPad y Mac → Calendario de Apple (archivo .ics);
+   * Android y el resto → Google Calendar. El iPad nuevo se presenta como Mac, por eso no se mira el táctil.
+   */
+  platform(nav = globalThis.navigator) {
+    const ua = nav?.userAgent ?? "";
+    const platform = nav?.userAgentData?.platform ?? nav?.platform ?? "";
+    if (/android/i.test(ua) || /android/i.test(platform)) return "google";
+    if (/iPhone|iPad|iPod|Macintosh|Mac OS X/i.test(ua) || /^(iPhone|iPad|iPod|Mac|macOS)/i.test(platform))
+      return "apple";
+    return "google";
+  },
+
+  /** Un solo botón: abre el calendario que corresponde al dispositivo. */
+  button(item, kind) {
     const added = this.isAdded(item);
     const outdated = Boolean(item.calendarKey) && !added;
     const cls = `btn btn--compact${added ? " btn--ghost" : ""}`;
-    const glyph = icon(added ? "check" : outdated ? "repeat" : "calendar", 16);
-    // En el celular se acorta a "Google" / "Apple": el ícono dice si está agregado o hay que actualizarlo
-    const verb = outdated ? html`<span class="calendar-actions__long">Actualizar en </span>` : "";
-    const label = outdated
-      ? "Actualizar en el calendario"
-      : added
-        ? "Ya está en el calendario"
-        : "Agregar al calendario";
-    return html`<div class="calendar-actions">
-      <a class="${cls}" href="${this.googleLink(this.event(item, kind))}" target="_blank" rel="noopener" title="${label}"
-        data-calendar="${kind}" data-id="${item.id}">${glyph}<span>${verb}Google<span class="calendar-actions__long"> Calendar</span></span></a>
-      <button type="button" class="${cls}" title="${label}" data-action="calendar-ics" data-kind="${kind}" data-id="${item.id}">${glyph}<span>${verb}Apple<span class="calendar-actions__long"> Calendar</span></span></button>
-    </div>`;
+    const content = html`${icon(added ? "check" : outdated ? "repeat" : "calendar", 16)}${added ? "Agregado" : outdated ? "Actualizar en el calendario" : "Agregar al calendario"}`;
+    return this.platform() === "apple"
+      ? html`<button type="button" class="${cls}" data-action="calendar-ics" data-kind="${kind}" data-id="${item.id}">${content}</button>`
+      : html`<a class="${cls}" href="${this.googleLink(this.event(item, kind))}" target="_blank" rel="noopener"
+          data-calendar="${kind}" data-id="${item.id}">${content}</a>`;
   },
 };
 

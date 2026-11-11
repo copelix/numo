@@ -159,14 +159,21 @@ test("un gasto en dólares no suma el impuesto de la tarjeta salvo que elijas pa
   await expect(tax).not.toBeChecked();
 });
 
-test("agrega una suscripción a Apple Calendar con un archivo .ics", async ({ context }) => {
+const IPHONE =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1";
+const ANDROID =
+  "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36";
+
+/** Abre Próximos pagos con una suscripción, haciéndose pasar por el celular que se indique. */
+async function openPagos(browser, userAgent) {
+  const context = await browser.newContext({ userAgent });
   const { page, errors } = await open(context, new Map());
   await app(page, n =>
     n.Store.commit(state => {
       state.subscriptions.push(
         n.Schema.subscription(
           {
-            id: "s-ics",
+            id: "s-cal",
             name: "Spotify",
             amount: 4500,
             currency: "ARS",
@@ -179,13 +186,30 @@ test("agrega una suscripción a Apple Calendar con un archivo .ics", async ({ co
     }),
   );
   await app(page, n => n.Router.go("pagos"));
+  return {
+    context,
+    page,
+    errors,
+    button: page.locator('[data-id="s-cal"]').filter({ hasText: "Agregar al calendario" }),
+  };
+}
+
+test("en el iPhone, agregar al calendario baja un .ics para Calendario de Apple", async ({ browser }) => {
+  const { context, page, errors, button } = await openPagos(browser, IPHONE);
+  await expect(button).toHaveCount(1);
   const download = page.waitForEvent("download");
-  await page.locator('[data-action="calendar-ics"][data-id="s-ics"]').click();
+  await button.click();
   const file = await download;
   expect(file.suggestedFilename()).toBe("spotify.ics");
   const text = await (await file.createReadStream()).toArray().then(c => Buffer.concat(c).toString("utf8"));
   expect(text).toContain("SUMMARY:Pago de Spotify");
-  await expect(page.locator('[data-action="calendar-ics"][data-id="s-ics"]')).toContainText("Apple Calendar");
-  expect(await app(page, n => Boolean(n.Store.state.subscriptions.find(s => s.id === "s-ics").calendarKey))).toBe(true);
+  await expect(page.locator('[data-id="s-cal"]').filter({ hasText: "Agregado" })).toHaveCount(1);
   expect(errors).toEqual([]);
+  await context.close();
+});
+
+test("en Android, agregar al calendario abre Google Calendar", async ({ browser }) => {
+  const { context, button } = await openPagos(browser, ANDROID);
+  await expect(button).toHaveAttribute("href", /^https:\/\/calendar\.google\.com\/calendar\/render\?.*Spotify/);
+  await context.close();
 });
