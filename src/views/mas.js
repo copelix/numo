@@ -65,7 +65,7 @@ export const MasViews = {
       ${group("Herramientas", [
         entry(
           "pagos",
-          `${next30 ? `${next30} ${next30 === 1 ? "pago" : "pagos"} en los próximos 30 días` : "Calendario de vencimientos"} · avisos en Google Calendar`,
+          `${next30 ? `${next30} ${next30 === 1 ? "pago" : "pagos"} en los próximos 30 días` : "Calendario de vencimientos"} · avisos en tu calendario`,
         ),
         entry(
           "planear",

@@ -65,9 +65,9 @@ export const PagosViews = {
       <header class="card__head">
         <div><h2 class="card__title">Avisos en tu calendario</h2>
           <p class="small muted">${all.length ? (pending ? `${pending} de ${all.length} sin agendar` : "Todo agendado") : ""}</p></div>
-        ${icon("bell")}
+        ${all.length > 1 && pending && Calendar.platform() === "apple" ? html`<button type="button" class="btn btn--compact" data-action="calendar-ics-all">${icon("calendar", 16)}Agregar todos</button>` : icon("bell")}
       </header>
-      <p class="small muted" style="margin-bottom:16px">Agregá cada cobro a Google Calendar y te avisa el celular aunque no abras Numo. Se repite solo, con la misma frecuencia de la suscripción. Si después cambiás el monto o la fecha, el botón te avisa para actualizarlo.</p>
+      <p class="small muted" style="margin-bottom:16px">Agregá cada cobro al calendario de tu celular y te avisa el día anterior, aunque no abras Numo. Se repite solo, con la misma frecuencia de la suscripción. Si después cambiás el monto o la fecha, el botón te avisa para actualizarlo.</p>
       ${
         all.length
           ? html`<ul class="list">${all.map(

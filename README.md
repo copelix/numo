@@ -14,7 +14,7 @@ Una app web para ordenar tu plata: ingresos, gastos, suscripciones, cuotas, pró
 ## Qué hace
 
 - **Movimientos:** ingresos y gastos por categoría, con búsqueda y filtros.
-- **Suscripciones y próximos pagos:** calendario de lo que se viene y cuánto queda del mes.
+- **Suscripciones y próximos pagos:** calendario de lo que se viene, cuánto queda del mes y avisos en el calendario del celular (Apple en iPhone, Google en Android).
 - **Cuotas:** cargás una compra en 3, 6 o 12 cuotas y cada mes aparece sola.
 - **Dólar tarjeta:** los gastos en dólares suman el recargo (30% por defecto, editable).
 - **Inflación:** compara tus gastos con el IPC del INDEC para ver si gastás más en términos reales.

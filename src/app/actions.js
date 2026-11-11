@@ -13,6 +13,7 @@ import { $ } from "../lib/utils.js";
 import { Backup } from "../sync/backup.js";
 import { Cloud } from "../sync/cloud.js";
 import { Sync } from "../sync/sync.js";
+import { Calendar } from "../ui/calendar.js";
 import { Modal } from "../ui/modal.js";
 import { Toast } from "../ui/toast.js";
 import { Views } from "../views/index.js";
@@ -47,6 +48,36 @@ export const Actions = {
   "contribute-goal": id => Forms.contribution(id),
   "new-category": () => Forms.category(),
   "edit-category": id => Forms.category(id),
+  /** Baja un .ics: en el iPhone se abre Calendario con el cobro listo para agregar. */
+  "calendar-ics": async (id, el) => {
+    const kind = el.dataset.kind;
+    const list = kind === "subscription" ? Store.state.subscriptions : Store.state.expenses;
+    const item = list.find(x => x.id === id);
+    if (!item) return;
+    const ev = Calendar.event(item, kind);
+    await Transfer.download(`${slug(ev.name)}.ics`, Calendar.ics([ev]), "text/calendar;charset=utf-8");
+    Store.commit(state => {
+      const target = (kind === "subscription" ? state.subscriptions : state.expenses).find(x => x.id === id);
+      if (target) target.calendarKey = Calendar.key(target);
+    });
+    Toast.show("Tocá Agregar para agendar el cobro en tu calendario.");
+  },
+  /** Todos los cobros en un solo .ics, para agregarlos de una vez. */
+  "calendar-ics-all": async () => {
+    const st = Store.state;
+    const items = [
+      ...Finance.activeSubscriptions().map(item => ({ item, kind: "subscription" })),
+      ...st.expenses.filter(e => e.recurring).map(item => ({ item, kind: "fixed" })),
+    ];
+    if (!items.length) return;
+    const events = items.map(({ item, kind }) => Calendar.event(item, kind));
+    await Transfer.download("numo-pagos.ics", Calendar.ics(events), "text/calendar;charset=utf-8");
+    Store.commit(state => {
+      for (const x of [...state.subscriptions, ...state.expenses])
+        if (items.some(({ item }) => item.id === x.id)) x.calendarKey = Calendar.key(x);
+    });
+    Toast.show(`Tocá Agregar todo para agendar ${items.length} ${items.length === 1 ? "cobro" : "cobros"}.`);
+  },
   "calendar-prev": () => {
     UIState.calendarOffset = Math.max(0, UIState.calendarOffset - 1);
     App.render();
@@ -154,3 +185,15 @@ export const Actions = {
     }
   },
 };
+
+/** Nombre de archivo sin acentos ni símbolos: "Disney+" → "disney". */
+function slug(text) {
+  return (
+    String(text)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "pago"
+  );
+}
