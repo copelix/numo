@@ -1861,3 +1861,110 @@ input[list]::-webkit-calendar-picker-indicator {
 .import-preview [data-income] {
   color: var(--income);
 }
+
+/* Tus datos y exportar */
+.item__meta--wrap {
+  white-space: normal;
+}
+.item--danger .item__title {
+  color: var(--warn);
+}
+.choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: var(--seg-pad);
+  background: var(--seg-bg);
+  border: 1px solid var(--seg-border);
+  border-radius: 10px;
+}
+.choice__opt {
+  position: relative;
+  flex: 1 1 auto;
+  cursor: pointer;
+}
+.choice__opt input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.choice__opt span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 7px;
+  color: var(--text-2);
+  font-size: var(--seg-size);
+  font-weight: var(--seg-weight);
+  letter-spacing: var(--nav-spacing);
+  text-transform: var(--nav-case);
+  white-space: nowrap;
+}
+.choice__opt:hover span {
+  color: var(--text);
+}
+.choice__opt input:checked + span {
+  background: var(--seg-on-bg);
+  color: var(--seg-on-fg);
+  box-shadow: var(--seg-on-shadow);
+}
+.choice__opt input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.export-parts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 0 16px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.export-parts legend {
+  margin-bottom: 4px;
+  padding: 0;
+}
+.export-parts__count {
+  margin-left: auto;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.export-parts .check:has(input:disabled) {
+  opacity: 0.5;
+  cursor: default;
+}
+.export-file {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  background: var(--item-bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.export-file__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--seg-bg);
+  color: var(--income);
+}
+.export-file__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.export-file__name {
+  overflow-wrap: anywhere;
+}
+.form-grid[hidden] {
+  display: none;
+}

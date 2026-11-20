@@ -21,6 +21,8 @@ const COLUMNS = [
 ];
 /** Con cuenta, todo se guarda en un solo registro de hasta 1 MB comprimido: más o menos 3 MB de texto. */
 const CLOUD_LIMIT = 2_500_000;
+/** Hojas que no son movimientos (las que agrega el Excel que exporta Numo): arrancan sin marcar. */
+const SUMMARY_SHEET = /^(resumen|suscripciones|cuotas)$/i;
 
 export const SheetImportForms = {
   /** Importar una planilla propia. sheets: [{ name, rows }] tal como salen del Excel o del CSV. */
@@ -57,7 +59,7 @@ export const SheetImportForms = {
           sheets.length > 1 &&
           html`<fieldset class="field field--full import-sheets"><legend>Hojas</legend>${sheets.map(
             (s, i) =>
-              html`<label class="check"><input type="checkbox" name="sheet" value="${i}" checked><span>${s.name}</span></label>`,
+              html`<label class="check"><input type="checkbox" name="sheet" value="${i}"${attrs({ checked: !SUMMARY_SHEET.test(s.name) })}><span>${s.name}</span></label>`,
           )}</fieldset>`
         }
         ${COLUMNS.map(([field, label]) => Field.select({ label, name: `col-${field}`, value: guess[field] ?? "", options }))}

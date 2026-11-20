@@ -107,6 +107,8 @@ export const Actions = {
   },
   "export-json": () => Transfer.exportJSON(),
   "export-csv": () => Transfer.exportCSV(),
+  "export-sheet": () => Forms.exportSheet(),
+  "export-backup": () => Forms.exportBackup(),
   import: () => $("#import-file").click(),
   "load-demo": () => {
     Store.commit(state => {

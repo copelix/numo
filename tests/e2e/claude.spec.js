@@ -262,3 +262,53 @@ test("un CSV propio también abre el asistente de importación", async ({ contex
   await expect(preview).toContainText("1 gasto y 1 ingreso");
   await expect(preview).toContainText("Los montos negativos entran como gastos");
 });
+
+test("exporta a Excel eligiendo período y qué incluir, y baja la copia de seguridad", async ({ context }) => {
+  const { page, errors } = await open(context, new Map());
+  await app(page, n => n.Store.commit(s => n.Demo.add(s)));
+  await app(page, n => n.Router.go("datos"));
+
+  // Planilla de Excel
+  await page.getByRole("button", { name: /Planilla de Excel/ }).click();
+  const modal = page.locator("#modal");
+  await expect(modal.getByRole("heading", { name: "Exportar a Excel" })).toBeVisible();
+  await expect(modal.locator('input[name="period"][value="year"]')).toBeChecked();
+  const summary = modal.locator("[data-summary]");
+  await expect(summary).toContainText(/numo-\d{4}-01-01-a-\d{4}-\d{2}-\d{2}\.xlsx/);
+  await expect(summary).toContainText("Hojas: Resumen por mes, Gastos");
+
+  await modal.getByRole("radio", { name: "Todo" }).check();
+  await expect(summary).toContainText(/numo-\d{4}-\d{2}-\d{2}\.xlsx/);
+  await modal.getByLabel("Cuotas").uncheck();
+  await expect(summary).not.toContainText("Cuotas");
+
+  // Fechas a mano, mal elegidas: no deja descargar
+  await modal.getByRole("radio", { name: "Elegir fechas" }).check();
+  await modal.locator('input[name="from"]').fill("2030-01-01");
+  await expect(summary).toContainText("tiene que ser anterior");
+  await expect(modal.locator('button[type="submit"]')).toBeDisabled();
+  await modal.getByRole("radio", { name: "Todo" }).check();
+
+  const download = page.waitForEvent("download");
+  await modal.getByRole("button", { name: "Descargar" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toMatch(/^numo-\d{4}-\d{2}-\d{2}\.xlsx$/);
+  const bytes = Buffer.concat(await (await file.createReadStream()).toArray());
+  expect(bytes.subarray(0, 2).toString()).toBe("PK");
+  const text = bytes.toString("utf8");
+  for (const sheet of ["Resumen", "Gastos", "Ingresos", "Suscripciones"]) expect(text).toContain(`name="${sheet}"`);
+  expect(text).not.toContain('name="Cuotas"');
+  if (process.env.NUMO_SAVE_EXPORT) await file.saveAs(process.env.NUMO_SAVE_EXPORT);
+  await expect(page.locator(".toast")).toContainText("Se descargó");
+
+  // Copia de seguridad
+  await page.getByRole("button", { name: /Copia de seguridad/ }).click();
+  await expect(modal).toContainText(/numo-copia-\d{4}-\d{2}-\d{2}\.json/);
+  await expect(modal).toContainText("Todavía no bajaste ninguna copia");
+  const backup = page.waitForEvent("download");
+  await modal.getByRole("button", { name: "Descargar copia" }).click();
+  const json = JSON.parse(Buffer.concat(await (await (await backup).createReadStream()).toArray()).toString("utf8"));
+  expect(json.expenses.length).toBeGreaterThan(0);
+  await expect(page.getByRole("button", { name: /Copia de seguridad/ })).toContainText("Última: hoy");
+  expect(errors).toEqual([]);
+});
