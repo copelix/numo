@@ -1,12 +1,14 @@
 import { App } from "../app/app.js";
-import { DEFAULT_CATEGORIES, INCOME_SOURCES } from "../config.js";
+import { INCOME_SOURCES } from "../config.js";
 import { Finance } from "./finance.js";
+import { categoryFor } from "./sheet-import.js";
 import { nextOnOrAfter, Schema } from "./schema.js";
 import { Store } from "./store.js";
 import { Dates } from "../lib/dates.js";
-import { uid } from "../lib/utils.js";
+import { readXlsx } from "../lib/xlsx.js";
 import { Backup } from "../sync/backup.js";
 import { Sync } from "../sync/sync.js";
+import { Forms } from "../forms/index.js";
 import { Modal } from "../ui/modal.js";
 import { Toast } from "../ui/toast.js";
 
@@ -136,14 +138,26 @@ export const Transfer = {
     return rows.filter(r => r.some(v => v.trim()));
   },
 
+  /**
+   * Importa un archivo: la copia JSON de Numo, el CSV que exporta Numo, o una planilla propia
+   * (Excel .xlsx o CSV con cualquier formato), que abre el asistente para elegir las columnas.
+   */
   async importFile(file) {
-    const text = (await file.text()).replace(/^\ufeff/, "");
+    const name = file.name.toLowerCase();
     try {
-      if (file.name.toLowerCase().endsWith(".json")) await this.importJSON(text);
-      else this.importCSV(text);
+      if (name.endsWith(".xls"))
+        return Toast.show("Ese es el formato viejo de Excel. Abrilo en Excel, guardalo como .xlsx y probá de nuevo.");
+      if (name.endsWith(".xlsx")) return Forms.importSheet(file.name, await readXlsx(await file.arrayBuffer()));
+      const text = (await file.text()).replace(/^\ufeff/, "");
+      if (name.endsWith(".json")) return await this.importJSON(text);
+      const rows = this.parseCSV(text);
+      const header = (rows[0] ?? []).map(h => h.trim().toLowerCase());
+      // El CSV que exporta Numo tiene las columnas "tipo" y "monto": se importa directo
+      if (header.includes("tipo") && header.includes("monto") && header.includes("nombre")) return this.importCSV(text);
+      Forms.importSheet(file.name, [{ name: file.name, rows }]);
     } catch (error) {
       console.error(error);
-      Toast.show("No se pudo importar. Revisá que sea un JSON o CSV exportado desde esta app.");
+      Toast.show("No se pudo leer el archivo. Probá con un Excel (.xlsx), un CSV o una copia JSON de Numo.");
     }
   },
 
@@ -174,20 +188,7 @@ export const Transfer = {
 
     Store.commit(state => {
       const ctx = { ids: new Set(), fallback: Finance.defaultCategoryId() };
-      const categoryId = name => {
-        if (!name) return ctx.fallback;
-        let cat = state.categories.find(c => c.name.toLowerCase() === name.toLowerCase());
-        if (!cat) {
-          cat = {
-            id: uid(),
-            name: name.slice(0, 40),
-            icon: "🏷️",
-            color: DEFAULT_CATEGORIES[state.categories.length % DEFAULT_CATEGORIES.length].color,
-          };
-          state.categories.push(cat);
-        }
-        return cat.id;
-      };
+      const categoryId = name => categoryFor(state, name, ctx.fallback);
       for (const row of rows) {
         const type = get(row, "tipo").toLowerCase();
         if (type === "ingreso") {

@@ -4,6 +4,7 @@ import { InstallmentForms } from "./installment.js";
 import { SharedForms } from "./shared.js";
 import { AuthForms } from "./auth.js";
 import { PlanningForms } from "./planning.js";
+import { SheetImportForms } from "./sheet-import.js";
 
 /* =========================================================================
    12. FORMULARIOS
@@ -15,4 +16,5 @@ export const Forms = {
   ...SharedForms,
   ...AuthForms,
   ...PlanningForms,
+  ...SheetImportForms,
 };
