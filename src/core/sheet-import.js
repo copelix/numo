@@ -189,7 +189,9 @@ export function buildMovements(sheets, mapping, { baseCurrency = "ARS", existing
     };
     const c = Object.fromEntries(Object.keys(FIELDS).map(f => [f, col(f)]));
     if (c.date < 0 || (c.amount < 0 && c.income < 0)) continue;
-    const mode = c.type >= 0 ? "type" : c.income >= 0 ? "split" : "sign";
+    // Una hoja que se llama "Ingresos" (como la que exporta Numo) es toda de ingresos
+    const mode =
+      c.type >= 0 ? "type" : c.income >= 0 ? "split" : /ingreso/.test(normalize(sheet.name)) ? "income" : "sign";
     for (const row of sheet.data) {
       const cell = i => (i >= 0 ? (row[i] ?? "") : "");
       if (!row.some(v => v !== "" && v !== undefined)) continue;
@@ -223,6 +225,7 @@ export function buildMovements(sheets, mapping, { baseCurrency = "ARS", existing
   out.rule = [
     modes.has("type") && "Gasto o ingreso según lo que dice la columna «Tipo».",
     modes.has("split") && "Lo que está en la columna de ingresos entra como ingreso; el resto, como gasto.",
+    modes.has("income") && "La hoja de ingresos entra como ingresos.",
     modes.has("sign") &&
       (signed
         ? "Los montos negativos entran como gastos y los positivos, como ingresos."
@@ -235,11 +238,13 @@ export function buildMovements(sheets, mapping, { baseCurrency = "ARS", existing
 
   for (const r of raw) {
     const isIncome =
-      r.mode === "type"
-        ? INCOME_WORDS.test(r.type)
-        : r.mode === "split"
-          ? r.incomeAmount !== 0 && !r.amount
-          : signed && r.amount > 0;
+      r.mode === "income"
+        ? true
+        : r.mode === "type"
+          ? INCOME_WORDS.test(r.type)
+          : r.mode === "split"
+            ? r.incomeAmount !== 0 && !r.amount
+            : signed && r.amount > 0;
     const amount = Math.abs(isIncome && r.mode === "split" ? r.incomeAmount : r.amount);
     if (!amount) {
       out.skipped++;

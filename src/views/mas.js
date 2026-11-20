@@ -6,6 +6,7 @@ import { Shared } from "../core/shared.js";
 import { Store } from "../core/store.js";
 import { Dates } from "../lib/dates.js";
 import { html } from "../lib/html.js";
+import { Backup } from "../sync/backup.js";
 import { Sync } from "../sync/sync.js";
 import { UI } from "../ui/components.js";
 import { currencyOptions, Field } from "../ui/fields.js";
@@ -83,7 +84,7 @@ export const MasViews = {
         entry("categorias", `${st.categories.length} categorías con su color e ícono`),
         entry("cambio", `Dólar ${dolarLabel()}, dólar tarjeta (+${Money.cardTax()}%) y otras monedas`),
       ])}
-      ${group("Tus datos", [entry("datos", "Exportar a Excel, importar desde Excel, borrar los ejemplos")])}`;
+      ${group("Tus datos", [entry("datos", "Exportar a Excel, copia de seguridad, importar")])}`;
   },
 
   /* ---------- Páginas dentro de "Más" ---------- */
@@ -184,29 +185,67 @@ export const MasViews = {
   },
 
   datos() {
+    const st = Store.state;
+    const movements = st.expenses.length + st.incomes.length;
+    const last = Backup.last();
+    const days = last ? Math.floor((Date.now() - last) / 86400000) : -1;
+    const row = ({ action, iconName, title, text, badge, danger }) =>
+      html`<li><button type="button" class="item item--button item--link${danger ? " item--danger" : ""}" data-action="${action}">
+        <span class="avatar" aria-hidden="true">${icon(iconName)}</span>
+        <span class="item__body">
+          <span class="item__title"><span>${title}</span>${badge && html`<span class="badge badge--muted">${badge}</span>`}</span>
+          <span class="item__meta item__meta--wrap">${text}</span>
+        </span>
+        ${icon("right", 18)}
+      </button></li>`;
+    const group = (title, items) =>
+      html`<div class="menu-group"><div class="group-head"><span>${title}</span></div><ul class="list">${items}</ul></div>`;
     return html`
       ${subHead({ title: "Tus datos" })}
-      <div class="grid grid--wide">
-        <section class="card">
-          <header class="card__head"><h2 class="card__title">Exportar e importar</h2></header>
-          <div class="btn-row">
-            <button type="button" class="btn" data-action="export-csv">Exportar a Excel (CSV)</button>
-            <button type="button" class="btn" data-action="export-json">Copia completa (JSON)</button>
-            <button type="button" class="btn" data-action="import">Importar</button>
-          </div>
-          <p class="small muted section">Importar acepta una planilla de Excel (.xlsx) o un CSV con tus propias columnas: elegís cuál es la fecha, el monto y la descripción, y ves cuántos movimientos entran antes de confirmar. El CSV que exporta Numo usa punto y coma, así Excel lo abre bien en español. La copia JSON sirve para restaurar todo.</p>
-        </section>
-        <section class="card">
-          <header class="card__head"><h2 class="card__title">Borrar</h2></header>
-          <div class="btn-row">
-            ${
-              Store.hasDemoData()
-                ? html`<button type="button" class="btn btn--danger" data-action="clear-demo">Borrar datos de ejemplo</button>`
-                : html`<button type="button" class="btn" data-action="load-demo">Cargar datos de ejemplo</button>`
-            }
-            <button type="button" class="btn btn--danger" data-action="reset-all">Borrar todo</button>
-          </div>
-        </section>
-      </div>`;
+      ${group("Exportar", [
+        row({
+          action: "export-sheet",
+          iconName: "sheet",
+          title: "Planilla de Excel",
+          text: "Gastos, ingresos, suscripciones y cuotas, con un resumen por mes. Elegís el período.",
+          badge: movements ? `${movements.toLocaleString("es-AR")} movimientos` : "",
+        }),
+        row({
+          action: "export-backup",
+          iconName: "shield",
+          title: "Copia de seguridad",
+          text: `Todo lo de Numo en un archivo, para recuperarlo si cambiás de teléfono. ${days < 0 ? "Todavía no hiciste ninguna." : days === 0 ? "Última: hoy." : `Última: hace ${days} ${days === 1 ? "día" : "días"}.`}`,
+        }),
+      ])}
+      ${group("Importar", [
+        row({
+          action: "import",
+          iconName: "upload",
+          title: "Traer datos",
+          text: "Desde tu planilla de Excel o CSV, o una copia de seguridad de Numo. Ves el resumen antes de confirmar.",
+        }),
+      ])}
+      ${group("Borrar", [
+        Store.hasDemoData()
+          ? row({
+              action: "clear-demo",
+              iconName: "trash",
+              title: "Borrar los datos de ejemplo",
+              text: "Quedan solo los tuyos.",
+            })
+          : row({
+              action: "load-demo",
+              iconName: "sparkle",
+              title: "Cargar datos de ejemplo",
+              text: "Para ver cómo funciona todo. Después los borrás en un toque.",
+            }),
+        row({
+          action: "reset-all",
+          iconName: "trash",
+          title: "Borrar todo",
+          text: "Elimina todos tus datos de Numo. No se puede deshacer.",
+          danger: true,
+        }),
+      ])}`;
   },
 };

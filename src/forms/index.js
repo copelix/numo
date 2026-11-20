@@ -5,6 +5,7 @@ import { SharedForms } from "./shared.js";
 import { AuthForms } from "./auth.js";
 import { PlanningForms } from "./planning.js";
 import { SheetImportForms } from "./sheet-import.js";
+import { ExportForms } from "./export.js";
 
 /* =========================================================================
    12. FORMULARIOS
@@ -17,4 +18,5 @@ export const Forms = {
   ...AuthForms,
   ...PlanningForms,
   ...SheetImportForms,
+  ...ExportForms,
 };

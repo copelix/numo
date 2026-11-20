@@ -22,6 +22,10 @@ export const Backup = {
   mark() {
     Storage.write(this.KEY, Date.now());
   },
+  /** Cuándo se bajó la última copia (milisegundos), o 0 si nunca. */
+  last() {
+    return Number(Storage.read(this.KEY)) || 0;
+  },
   due() {
     if (Sync.mode !== "local" || !Storage.available || !Store.hasUserData()) return false;
     const last = Number(Storage.read(this.KEY)) || 0;

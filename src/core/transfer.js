@@ -1,11 +1,13 @@
 import { App } from "../app/app.js";
 import { INCOME_SOURCES } from "../config.js";
+import { collect, fileName, workbookSheets } from "./export.js";
 import { Finance } from "./finance.js";
 import { categoryFor } from "./sheet-import.js";
 import { nextOnOrAfter, Schema } from "./schema.js";
 import { Store } from "./store.js";
 import { Dates } from "../lib/dates.js";
 import { readXlsx } from "../lib/xlsx.js";
+import { writeXlsx } from "../lib/xlsx-write.js";
 import { Backup } from "../sync/backup.js";
 import { Sync } from "../sync/sync.js";
 import { Forms } from "../forms/index.js";
@@ -30,15 +32,17 @@ export const Transfer = {
     "recurrente",
   ],
 
+  /** Ofrece el archivo para guardar. Devuelve true si se descargó (o se entregó para guardar). */
   async download(filename, content, type) {
     if (Sync.downloads) {
       try {
         await Sync.downloads.save({ filename, data: content });
+        return true;
       } catch (error) {
         if (error?.code !== "declined")
           Toast.show("No se pudo exportar desde esta vista. Probá abriendo la app en claude.ai.");
+        return false;
       }
-      return;
     }
     // Fuera de Claude: descarga común del navegador
     const url = URL.createObjectURL(new Blob([content], { type }));
@@ -47,15 +51,37 @@ export const Transfer = {
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return true;
   },
 
-  exportJSON() {
-    Backup.mark();
-    this.download(`numo-${Dates.today()}.json`, JSON.stringify(Store.state, null, 2), "application/json");
+  /** Copia de seguridad: todo el estado, para restaurarlo con Importar. */
+  async exportJSON() {
+    const ok = await this.download(
+      `numo-copia-${Dates.today()}.json`,
+      JSON.stringify(Store.state, null, 2),
+      "application/json",
+    );
+    // Solo cuenta como copia si se bajó; así "Tus datos" y el aviso de copia quedan al día
+    if (ok) {
+      Backup.mark();
+      App.render();
+    }
+    return ok;
   },
 
-  exportCSV() {
-    const st = Store.state;
+  /** Planilla de Excel con las hojas que correspondan a lo elegido (ver core/export.js). */
+  exportXlsx(data = collect()) {
+    const bytes = writeXlsx(workbookSheets(data));
+    return this.download(
+      fileName(data, "xlsx"),
+      bytes,
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+  },
+
+  /** CSV en el formato que Numo vuelve a importar directo: todo en una tabla, separado con punto y coma. */
+  exportCSV(data = collect()) {
+    const st = data;
     const amount = n => String(n).replace(".", ",");
     const cell = value => `"${String(value ?? "").replace(/"/g, '""')}"`;
     const rows = [
@@ -100,7 +126,7 @@ export const Transfer = {
       ]),
     ];
     const csv = [this.CSV_COLUMNS, ...rows].map(r => r.map(cell).join(";")).join("\r\n");
-    this.download(`numo-${Dates.today()}.csv`, `\ufeff${csv}`, "text/csv;charset=utf-8");
+    return this.download(fileName(data, "csv"), `\ufeff${csv}`, "text/csv;charset=utf-8");
   },
 
   /** Parser de CSV con comillas; detecta solo si el separador es coma o punto y coma. */
