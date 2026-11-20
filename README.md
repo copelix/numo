@@ -20,6 +20,7 @@ Una app web para ordenar tu plata: ingresos, gastos, suscripciones, cuotas, pró
 - **Inflación:** compara tus gastos con el IPC del INDEC para ver si gastás más en términos reales.
 - **Gastos compartidos:** quién pagó qué en un viaje o una salida y quién le transfiere a quién, con el resumen listo para mandar.
 - **Informes:** gráficos por categoría y por mes, presupuesto y comparación con el mes anterior.
+- **Importar desde Excel:** traés tu planilla (.xlsx o CSV, con tus propias columnas y varias hojas), elegís qué es cada columna y ves el resumen antes de confirmar. No repite lo que ya cargaste.
 - **Tema claro, oscuro o el del sistema.**
 - **Funciona sin internet** (PWA instalable) y, si creás una cuenta, se sincroniza entre dispositivos.
 

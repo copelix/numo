@@ -83,7 +83,7 @@ export const MasViews = {
         entry("categorias", `${st.categories.length} categorías con su color e ícono`),
         entry("cambio", `Dólar ${dolarLabel()}, dólar tarjeta (+${Money.cardTax()}%) y otras monedas`),
       ])}
-      ${group("Tus datos", [entry("datos", "Exportar a Excel, importar, borrar los ejemplos")])}`;
+      ${group("Tus datos", [entry("datos", "Exportar a Excel, importar desde Excel, borrar los ejemplos")])}`;
   },
 
   /* ---------- Páginas dentro de "Más" ---------- */
@@ -194,7 +194,7 @@ export const MasViews = {
             <button type="button" class="btn" data-action="export-json">Copia completa (JSON)</button>
             <button type="button" class="btn" data-action="import">Importar</button>
           </div>
-          <p class="small muted section">El CSV usa punto y coma, así Excel lo abre bien en español. La copia JSON sirve para restaurar todo.</p>
+          <p class="small muted section">Importar acepta una planilla de Excel (.xlsx) o un CSV con tus propias columnas: elegís cuál es la fecha, el monto y la descripción, y ves cuántos movimientos entran antes de confirmar. El CSV que exporta Numo usa punto y coma, así Excel lo abre bien en español. La copia JSON sirve para restaurar todo.</p>
         </section>
         <section class="card">
           <header class="card__head"><h2 class="card__title">Borrar</h2></header>

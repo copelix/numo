@@ -213,3 +213,52 @@ test("en Android, agregar al calendario abre Google Calendar", async ({ browser 
   await expect(button).toHaveAttribute("href", /^https:\/\/calendar\.google\.com\/calendar\/render\?.*Spotify/);
   await context.close();
 });
+
+test("importa una planilla de Excel propia, se puede deshacer y no duplica al reimportar", async ({ context }) => {
+  const { page, errors } = await open(context, new Map());
+  const file = "tests/fixtures/planilla-libreoffice.xlsx";
+  const count = () => app(page, n => [n.Store.state.expenses.length, n.Store.state.incomes.length]);
+  const [expenses0, incomes0] = await count();
+
+  await app(page, n => n.Router.go("datos"));
+  await page.locator("#import-file").setInputFiles(file);
+  const modal = page.locator("#modal");
+  await expect(modal.getByRole("heading", { name: "Importar desde Excel" })).toBeVisible();
+  await expect(modal.locator('select[name="col-date"]')).toHaveValue("Fecha");
+  await expect(modal.locator('select[name="col-amount"]')).toHaveValue("Importe");
+  await expect(modal.locator("[data-import-preview]")).toContainText("7 gastos y 2 ingresos");
+
+  // Solo la primera hoja
+  await modal.getByLabel("Caja 2025").uncheck();
+  await expect(modal.locator("[data-import-preview]")).toContainText("5 gastos y 0 ingresos");
+  await modal.getByLabel("Caja 2025").check();
+  await modal.getByRole("button", { name: "Importar 9" }).click();
+  await expect(modal).not.toBeVisible();
+  expect(await count()).toEqual([expenses0 + 7, incomes0 + 2]);
+  expect(await app(page, n => n.Store.state.categories.some(c => c.name === "Salidas"))).toBe(true);
+
+  // Deshacer
+  await page.locator(".toast").getByRole("button", { name: "Deshacer" }).click();
+  await expect.poll(count).toEqual([expenses0, incomes0]);
+
+  // Importar dos veces: la segunda no repite nada
+  await page.locator("#import-file").setInputFiles(file);
+  await modal.getByRole("button", { name: "Importar 9" }).click();
+  await page.locator("#import-file").setInputFiles(file);
+  await expect(modal.locator("[data-import-preview]")).toContainText("9 ya estaban cargadas");
+  await expect(modal.locator('button[type="submit"]')).toBeDisabled();
+  expect(errors).toEqual([]);
+});
+
+test("un CSV propio también abre el asistente de importación", async ({ context }) => {
+  const { page } = await open(context, new Map());
+  await app(page, n => n.Router.go("datos"));
+  await page.locator("#import-file").setInputFiles({
+    name: "banco.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from("Fecha;Descripción;Monto\n01/03/2024;Sueldo;1.000.000\n02/03/2024;Luz;-25.000,50\n"),
+  });
+  const preview = page.locator("[data-import-preview]");
+  await expect(preview).toContainText("1 gasto y 1 ingreso");
+  await expect(preview).toContainText("Los montos negativos entran como gastos");
+});

@@ -1828,3 +1828,36 @@ input[list]::-webkit-calendar-picker-indicator {
 .recent.is-picked .recent__amount {
   color: inherit;
 }
+
+/* Importar desde Excel */
+.import-sheets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.import-sheets legend {
+  width: 100%;
+  margin-bottom: 4px;
+  padding: 0;
+}
+.import-preview {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.import-preview p {
+  margin: 0;
+}
+.import-preview__warn {
+  color: var(--warn);
+}
+.import-preview .table td {
+  padding-block: 8px;
+}
+.import-preview [data-income] {
+  color: var(--income);
+}
