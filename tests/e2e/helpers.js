@@ -13,6 +13,14 @@ export const DOLAR = [
   { moneda: "USD", casa: "bolsa", venta: 1581.1, fechaActualizacion: "2026-11-04T11:55:00.000Z" },
 ];
 
+/** Lo que devuelve la serie oficial del IPC en las pruebas (variación mensual como fracción). */
+export const IPC = {
+  data: [
+    ["2030-02-01", 0.031],
+    ["2030-01-01", 0.025],
+  ],
+};
+
 /** Corta las tipografías de Google (no hay internet en las pruebas) y junta los errores de la página. */
 export async function watchErrors(page) {
   const errors = [];
@@ -31,6 +39,15 @@ export async function watchErrors(page) {
       body: JSON.stringify(DOLAR),
     }),
   );
+  // Inflación simulada: la serie oficial responde y el respaldo no se usa
+  await page.context().route("https://apis.datos.gob.ar/**", r =>
+    r.fulfill({
+      contentType: "application/json",
+      headers: { "access-control-allow-origin": "*" },
+      body: JSON.stringify(IPC),
+    }),
+  );
+  await page.context().route("https://api.argentinadatos.com/**", r => r.abort());
   return errors;
 }
 

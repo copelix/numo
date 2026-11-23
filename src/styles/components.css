@@ -1968,3 +1968,17 @@ input[list]::-webkit-calendar-picker-indicator {
 .form-grid[hidden] {
   display: none;
 }
+
+/* Aumento de un ingreso fijo */
+.raise {
+  display: grid;
+  gap: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.raise__now {
+  margin: 0;
+}
+.raise__fields {
+  margin-top: 4px;
+}

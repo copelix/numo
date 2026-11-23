@@ -174,7 +174,9 @@ export const App = {
       return;
     }
     Store.commit(state => {
-      if (value === null || DEFAULT_IPC[key] === value) delete state.settings.ipc[key];
+      // Si es igual al del INDEC, no hace falta guardarlo como tuyo
+      const official = state.settings.ipcOfficial[key] ?? DEFAULT_IPC[key];
+      if (value === null || official === value) delete state.settings.ipc[key];
       else state.settings.ipc[key] = value;
     });
   },

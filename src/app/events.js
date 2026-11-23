@@ -3,6 +3,7 @@ import { App } from "./app.js";
 import { Router } from "./router.js";
 import { UIState } from "./state.js";
 import { Dolar } from "../core/dolar.js";
+import { IpcSync } from "../core/inflation.js";
 import { Store } from "../core/store.js";
 import { Transfer } from "../core/transfer.js";
 import { Forms } from "../forms/index.js";
@@ -147,5 +148,6 @@ export function bindEvents() {
     App.settle();
     App.render();
     Dolar.refresh();
+    IpcSync.refresh();
   });
 }

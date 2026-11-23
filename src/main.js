@@ -59,6 +59,7 @@ import "./styles/components.css";
 import { App } from "./app/app.js";
 import { bindEvents } from "./app/events.js";
 import { Dolar } from "./core/dolar.js";
+import { IpcSync } from "./core/inflation.js";
 import { Schema } from "./core/schema.js";
 import { Store } from "./core/store.js";
 import { Persist } from "./sync/backup.js";
@@ -77,6 +78,7 @@ export async function boot() {
   if (await Sync.connect()) await Sync.start(cache);
   else Sync.startLocal(cache);
   Dolar.refresh();
+  IpcSync.refresh();
   if (typeof window.claude?.use !== "function") Persist.ask();
 }
 

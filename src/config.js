@@ -58,6 +58,11 @@ export const DEFAULT_IPC = {
   "2026-09": 1.9,
 };
 export const INDEC_IPC_URL = "https://www.indec.gob.ar/indec/web/Nivel4-Tema-3-5-31";
+/* Inflación automática. Principal: la serie oficial del IPC del INDEC en datos.gob.ar (variación mensual,
+   últimos 36 meses). Respaldo: ArgentinaDatos, que publica los mismos valores. Las dos son públicas. */
+export const IPC_API =
+  "https://apis.datos.gob.ar/series/api/series/?ids=148.3_INIVELNAL_DICI_M_26&representation_mode=percent_change&limit=36&sort=desc&format=json";
+export const IPC_API_BACKUP = "https://api.argentinadatos.com/v1/finanzas/indices/inflacion";
 export const FREQUENCIES = {
   semanal: { label: "Semanal", perMonth: 52 / 12, days: 7 },
   mensual: { label: "Mensual", perMonth: 1, months: 1 },

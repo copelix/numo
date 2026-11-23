@@ -74,6 +74,13 @@ export const Schema = {
         ipc[key] = clamp(Number(value), -50, 100);
     }
     settings.ipc = ipc;
+    // Lo que trajo la app sola del INDEC (ver core/inflation.js)
+    const official = {};
+    for (const [key, value] of Object.entries(src.settings?.ipcOfficial ?? {})) {
+      if (/^\d{4}-\d{2}$/.test(key) && Number.isFinite(Number(value)) && value !== null && value !== "")
+        official[key] = clamp(Number(value), -50, 100);
+    }
+    settings.ipcOfficial = official;
     const dolar = src.settings?.dolar ?? {};
     settings.dolar = {
       source: DOLAR_SOURCES.some(([v]) => v === dolar.source) ? dolar.source : "oficial",
@@ -257,6 +264,15 @@ export const Schema = {
       date: i.date,
       sourceId: INCOME_SOURCES.some(x => x.id === i.sourceId) ? i.sourceId : "otros",
       recurring: Boolean(i.recurring) && !i.templateId,
+      ...(i.recurring && !i.templateId && Array.isArray(i.raises) && i.raises.length
+        ? {
+            raises: i.raises
+              .filter(r => Dates.isValid(r?.from) && toNumber(r?.amount) > 0)
+              .map(r => ({ from: r.from, amount: toNumber(r.amount) }))
+              .sort((a, b) => a.from.localeCompare(b.from))
+              .slice(-24),
+          }
+        : {}),
       ...(i.templateId ? { templateId: String(i.templateId) } : {}),
       ...(i.demo ? { demo: true } : {}),
     };

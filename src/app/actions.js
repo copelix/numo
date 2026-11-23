@@ -3,6 +3,7 @@ import { Router } from "./router.js";
 import { UIState } from "./state.js";
 import { Demo } from "../core/demo.js";
 import { Finance } from "../core/finance.js";
+import { IpcSync } from "../core/inflation.js";
 import { Shared } from "../core/shared.js";
 import { Store } from "../core/store.js";
 import { Transfer } from "../core/transfer.js";
@@ -108,6 +109,19 @@ export const Actions = {
   "export-json": () => Transfer.exportJSON(),
   "export-csv": () => Transfer.exportCSV(),
   "export-sheet": () => Forms.exportSheet(),
+  "ipc-refresh": async (_id, el) => {
+    el.disabled = true;
+    el.textContent = "Buscando…";
+    const updated = await IpcSync.refresh({ force: true });
+    if (!updated) {
+      App.render();
+      Toast.show(
+        navigator.onLine === false
+          ? "Sin conexión. Probá de nuevo más tarde."
+          : "Todavía no hay datos nuevos del INDEC.",
+      );
+    } else Toast.show("Listo: se actualizó la inflación.");
+  },
   "export-backup": () => Forms.exportBackup(),
   import: () => $("#import-file").click(),
   "load-demo": () => {
