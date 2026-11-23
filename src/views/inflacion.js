@@ -1,4 +1,4 @@
-import { DEFAULT_IPC, INDEC_IPC_URL } from "../config.js";
+import { INDEC_IPC_URL } from "../config.js";
 import { Inflation } from "../core/inflation.js";
 import { Store } from "../core/store.js";
 import { Dates } from "../lib/dates.js";
@@ -27,8 +27,8 @@ export const InflacionViews = {
         missing.length > 0 &&
         html`<div class="banner" role="status">${icon("bell")}<div>
         <strong>Falta la inflación de ${missing.map(k => Dates.monthName(k)).join(" y ")}</strong>
-        <p class="small">El INDEC la publica a mediados del mes siguiente. Buscala en <a class="link" href="${INDEC_IPC_URL}" target="_blank" rel="noopener">indec.gob.ar</a> y cargala abajo. Mientras tanto, Numo usa el último dato.</p>
-      </div></div>`
+        <p class="small">Numo la busca sola en el INDEC apenas se publica (a mediados del mes siguiente). Si ya salió y no aparece, puede que no haya conexión: tocá <strong>Buscar ahora</strong> o cargala abajo desde <a class="link" href="${INDEC_IPC_URL}" target="_blank" rel="noopener">indec.gob.ar</a>. Mientras tanto, se usa el último dato.</p>
+      </div><button type="button" class="btn btn--compact" data-action="ipc-refresh">Buscar ahora</button></div>`
       }
       <div class="grid grid--stats">
         <article class="card"><p class="eyebrow">${capitalize(Dates.monthName(last))}</p><p class="stat__value">${Inflation.pct(Inflation.rate(last))}</p><p class="stat__note">Último dato cargado</p></article>
@@ -45,11 +45,11 @@ export const InflacionViews = {
             return html`<tr class="${value === undefined ? "is-missing" : ""}">
               <td>${capitalize(Dates.monthName(k))}</td>
               <td><input class="input" type="text" inputmode="decimal" autocomplete="off" id="ipc-${k}" data-ipc="${k}" value="${value === undefined ? "" : numberText(value)}" placeholder="Falta" aria-label="Inflación de ${Dates.monthName(k)} en %"></td>
-              <td class="small muted">${value === undefined ? "Sin dato" : mineSet ? (Object.hasOwn(DEFAULT_IPC, k) ? "Corregido por vos" : "Cargado por vos") : "INDEC"}</td>
+              <td class="small muted">${value === undefined ? "Sin dato" : mineSet ? (Inflation.isOfficial(k) ? "Corregido por vos" : "Cargado por vos") : "INDEC"}</td>
             </tr>`;
           })}</tbody>
         </table></div>
-        <p class="small muted" style="margin-top:12px">Si borrás un valor que vino con la app, vuelve el del INDEC.</p>
+        <p class="small muted" style="margin-top:12px">Los datos se actualizan solos desde el INDEC. Si corregís un mes, se usa tu valor; si lo borrás, vuelve el del INDEC.</p>
       </section>`;
   },
 };

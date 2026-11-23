@@ -80,11 +80,12 @@ Object.assign(UI, {
   incomeRow(i) {
     const source = Finance.incomeSource(i.sourceId);
     const badge = i.recurring ? "Fijo" : i.templateId ? "Automático" : "";
+    const raise = i.recurring ? Finance.pendingRaise(i) : null;
     return html`<li><button type="button" class="item item--button" data-action="edit-income" data-id="${i.id}">
       ${UI.avatar(source)}
       <span class="item__body">
         <span class="item__title"><span>${i.description}</span>${badge && html`<span class="badge badge--muted">${badge}</span>`}</span>
-        <span class="item__meta">${source.name}</span>
+        <span class="item__meta">${source.name}${raise && ` · sube a ${Money.format(raise.amount, i.currency)} el ${Dates.formatShort(raise.from)}`}</span>
       </span>
       <span class="item__end">
         <span class="item__amount item__amount--in">+${Money.format(i.amount, i.currency)}</span>

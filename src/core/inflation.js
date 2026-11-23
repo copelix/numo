@@ -1,4 +1,5 @@
-import { DEFAULT_IPC } from "../config.js";
+import { DEFAULT_IPC, IPC_API, IPC_API_BACKUP } from "../config.js";
+import { Storage } from "../lib/storage.js";
 import { Store } from "./store.js";
 import { Dates } from "../lib/dates.js";
 
@@ -6,9 +7,14 @@ import { Dates } from "../lib/dates.js";
    6b. INFLACIÓN: llevar pesos de un mes a pesos de otro con el IPC
    ========================================================================= */
 export const Inflation = {
-  /** Valores del INDEC más lo que cargaste o corregiste vos. */
+  /** Los que trae la app, los que se bajaron solos del INDEC y, encima, lo que cargaste o corregiste vos. */
   table() {
-    return { ...DEFAULT_IPC, ...(Store.state?.settings?.ipc ?? {}) };
+    const s = Store.state?.settings;
+    return { ...DEFAULT_IPC, ...(s?.ipcOfficial ?? {}), ...(s?.ipc ?? {}) };
+  },
+  /** ¿Este mes vino del INDEC (con la app o bajado solo)? */
+  isOfficial(key) {
+    return Object.hasOwn(DEFAULT_IPC, key) || Object.hasOwn(Store.state?.settings?.ipcOfficial ?? {}, key);
   },
   rate(key) {
     const v = this.table()[key];
@@ -54,3 +60,88 @@ export const Inflation = {
   pct: value =>
     `${value >= 0 ? "+" : ""}${value.toLocaleString("es-AR", { maximumFractionDigits: 1, minimumFractionDigits: value !== 0 && Math.abs(value) < 10 ? 1 : 0 })}%`,
 };
+
+/* =========================================================================
+   INFLACIÓN AUTOMÁTICA
+   Al abrir la app (como mucho dos veces por día) busca el IPC publicado por el
+   INDEC. Sin conexión, o si las fuentes no responden, sigue con lo que tiene.
+   ========================================================================= */
+export const IpcSync = {
+  MAX_AGE: 12 * 60 * 60 * 1000,
+  CHECK_KEY: "numo:ipcCheckedAt",
+  pending: null,
+
+  refresh({ force = false } = {}) {
+    if (!Store.state) return Promise.resolve(false);
+    const checked = Number(Storage.read(this.CHECK_KEY)) || 0;
+    if (!force && Date.now() - checked < this.MAX_AGE) return Promise.resolve(false);
+    this.pending ??= this.load().finally(() => {
+      this.pending = null;
+    });
+    return this.pending;
+  },
+
+  async load() {
+    for (const [url, parse] of [
+      [IPC_API, this.parseOfficial],
+      [IPC_API_BACKUP, this.parseBackup],
+    ]) {
+      try {
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) continue;
+        const values = parse(await response.json());
+        if (Object.keys(values).length) {
+          Storage.write(this.CHECK_KEY, Date.now());
+          return this.apply(values);
+        }
+      } catch {
+        /* sin conexión o fuente caída: probamos la otra */
+      }
+    }
+    return false;
+  },
+
+  /** datos.gob.ar: { data: [["2026-10-01", 0.0217…], …] } (variación como fracción). */
+  parseOfficial(json) {
+    const out = {};
+    for (const [date, value] of Array.isArray(json?.data) ? json.data : []) {
+      if (typeof date === "string" && Number.isFinite(value)) out[date.slice(0, 7)] = Math.round(value * 1000) / 10;
+    }
+    return clean(out);
+  },
+
+  /** ArgentinaDatos: [{ fecha: "2026-10-31", valor: 2.2 }, …] desde 1943; nos quedamos con los últimos 36. */
+  parseBackup(list) {
+    const out = {};
+    for (const x of (Array.isArray(list) ? list : []).slice(-36)) {
+      if (typeof x?.fecha === "string" && Number.isFinite(Number(x.valor)) && x.valor !== null)
+        out[x.fecha.slice(0, 7)] = Number(x.valor);
+    }
+    return clean(out);
+  },
+
+  /**
+   * Guarda los meses que llegaron. Si un mes llega por primera vez y lo habías cargado a mano
+   * (porque todavía no estaba), se usa el del INDEC. Una corrección tuya de un mes que ya había
+   * llegado se respeta. Solo guarda si algo cambió, para no subir a la nube por nada.
+   */
+  apply(values) {
+    const settings = Store.state.settings;
+    const before = settings.ipcOfficial ?? {};
+    const changed = Object.entries(values).filter(([k, v]) => before[k] !== v);
+    const arrived = changed.map(([k]) => k).filter(k => !Object.hasOwn(before, k) && Object.hasOwn(settings.ipc, k));
+    if (!changed.length) return false;
+    Store.commit(state => {
+      state.settings.ipcOfficial = { ...before, ...values };
+      for (const k of arrived) delete state.settings.ipc[k];
+    });
+    return true;
+  },
+};
+
+/** Solo meses válidos y valores razonables (entre −50% y 100% mensual). */
+function clean(values) {
+  return Object.fromEntries(
+    Object.entries(values).filter(([k, v]) => /^\d{4}-\d{2}$/.test(k) && k >= "2017-01" && v >= -50 && v <= 100),
+  );
+}

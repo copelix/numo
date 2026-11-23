@@ -52,9 +52,24 @@ export const Finance = {
   earnedInMonth(monthKey) {
     return this.sum(this.incomesInMonth(monthKey));
   },
-  /** Ingresos fijos expresados por mes. */
+  /** Ingresos fijos expresados por mes (con el monto que se cobra hoy, contando aumentos ya aplicados). */
   fixedIncomeMonthly() {
-    return this.sum(this.s.incomes.filter(i => i.recurring));
+    const today = Dates.today();
+    return this.sum(this.s.incomes.filter(i => i.recurring).map(i => ({ ...i, amount: this.amountOn(i, today) })));
+  },
+  /**
+   * Cuánto se cobra un ingreso fijo en una fecha: el monto original o el del último aumento
+   * que ya empezó. Los aumentos se guardan aparte para no cambiar lo que ya se cobró.
+   */
+  amountOn(template, date) {
+    let amount = template.amount;
+    for (const r of template.raises ?? []) if (r.from <= date) amount = r.amount;
+    return amount;
+  },
+  /** El aumento que todavía no empezó (a lo sumo uno), o null. */
+  pendingRaise(template, list = this.s.incomes) {
+    const next = this.nextRecurringDate(template, list);
+    return (template.raises ?? []).find(r => r.from >= next) ?? null;
   },
 
   totalsBy(expenses, keyOf) {
@@ -308,7 +323,7 @@ export const Finance = {
         state.incomes.push({
           id: uid(),
           description: template.description,
-          amount: template.amount,
+          amount: this.amountOn(template, next),
           currency: template.currency,
           date: next,
           sourceId: template.sourceId,

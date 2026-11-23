@@ -1,17 +1,22 @@
 import { Router } from "../app/router.js";
 import { INCOME_SOURCES } from "../config.js";
 import { Finance } from "../core/finance.js";
+import { Inflation } from "../core/inflation.js";
 import { Money } from "../core/money.js";
 import { Schema } from "../core/schema.js";
 import { Store } from "../core/store.js";
 import { Forms } from "./index.js";
 import { Dates } from "../lib/dates.js";
 import { attrs, html } from "../lib/html.js";
-import { $, toNumber, uid } from "../lib/utils.js";
+import { $, numberText, toNumber, uid } from "../lib/utils.js";
 import { currencyOptions, Field } from "../ui/fields.js";
+import { icon } from "../ui/icons.js";
 import { Modal } from "../ui/modal.js";
 import { QuickEntry } from "../ui/quick-entry.js";
 import { Toast } from "../ui/toast.js";
+
+/** "2026-12-01" → "1 de diciembre". */
+const dayMonth = date => Dates.parse(date).toLocaleDateString("es-AR", { day: "numeric", month: "long" });
 
 export const MovementsForms = {
   /** El "+" general: pregunta si es un gasto o un ingreso. */
@@ -173,6 +178,17 @@ export const MovementsForms = {
       sourceId: "sueldo",
       recurring: false,
     };
+    // Aumento programado: solo en el ingreso fijo original (el que se repite)
+    const isTemplate = Boolean(existing?.recurring);
+    const template = existing?.templateId ? st.incomes.find(x => x.id === existing.templateId) : null;
+    const pending = isTemplate ? Finance.pendingRaise(existing) : null;
+    const current = isTemplate ? Finance.amountOn(existing, Dates.today()) : 0;
+    const nextDates = isTemplate
+      ? Array.from({ length: 6 }, (_, n) =>
+          Dates.addMonths(Finance.nextRecurringDate(existing, st.incomes), n, Dates.dayOf(existing.date)),
+        )
+      : [];
+    const lastIpc = Inflation.rate(Inflation.lastKnown());
     Modal.open({
       title: existing ? "Editar ingreso" : "Nuevo ingreso",
       description: existing?.templateId ? "Lo generó la app a partir de un ingreso fijo mensual." : "",
@@ -185,9 +201,57 @@ export const MovementsForms = {
         ${Field.chips({ label: "Tipo de ingreso", name: "sourceId", value: i.sourceId, options: INCOME_SOURCES.map(x => [x.id, x.icon, x.name]) })}
         ${Field.input({ label: "Fecha", name: "date", type: "date", value: i.date, required: true, full: true })}
         ${!i.templateId && Field.checkbox({ label: "Se repite todos los meses (sueldo, un alquiler que cobrás…)", name: "recurring", checked: i.recurring })}
+        ${
+          isTemplate &&
+          html`<div class="field--full raise">
+          ${current !== existing.amount && html`<p class="small muted raise__now">Hoy cobrás <strong>${Money.format(current, existing.currency)}</strong> por mes, con los aumentos que ya empezaron.</p>`}
+          ${Field.checkbox({ label: "Me lo van a aumentar", name: "raise", checked: Boolean(pending) })}
+          <div class="form-grid raise__fields" data-raise-fields${attrs({ hidden: !pending })}>
+            ${Field.number({ label: "Nuevo monto", name: "raiseAmount", value: pending?.amount ?? "", min: "0.01" })}
+            ${Field.select({ label: "Desde el cobro del", name: "raiseFrom", value: pending?.from ?? nextDates[0], options: nextDates.map(d => [d, dayMonth(d)]) })}
+            <div class="quick field--full" data-raise-quick>
+              ${[5, 10, 20].map(p => html`<button type="button" class="quick__btn" data-pct="${p}">+${p}%</button>`)}
+              ${lastIpc > 0 && html`<button type="button" class="quick__btn" data-pct="${lastIpc}">Inflación (+${numberText(lastIpc)}%)</button>`}
+            </div>
+            <p class="hint-line field--full" data-raise-hint aria-live="polite"></p>
+          </div>
+        </div>`
+        }
+        ${
+          template?.recurring &&
+          html`<div class="field--full"><button type="button" class="btn btn--compact" data-action="edit-income" data-id="${template.id}">${icon("trend", 16)}Cambiar el monto de los próximos meses</button></div>`
+        }
       </div>${QuickEntry.descriptionsDatalist(st.incomes)}`,
       focus: existing ? null : 'input[name="amount"]',
-      onReady: form => QuickEntry.wire(form, "income", st.incomes),
+      onReady: form => {
+        QuickEntry.wire(form, "income", st.incomes);
+        if (!isTemplate) return;
+        const toggle = $('input[name="raise"]', form);
+        const fields = $("[data-raise-fields]", form);
+        const amount = $('input[name="raiseAmount"]', form);
+        const from = $('select[name="raiseFrom"]', form);
+        const hint = $("[data-raise-hint]", form);
+        const update = () => {
+          fields.hidden = !toggle.checked;
+          amount.required = toggle.checked;
+          const value = toNumber(amount.value);
+          const pct = current > 0 ? (value / current - 1) * 100 : 0;
+          hint.textContent =
+            toggle.checked && value > 0
+              ? `Pasa de ${Money.format(current, existing.currency)} a ${Money.format(value, existing.currency)}${current > 0 ? ` (${pct >= 0 ? "+" : ""}${numberText(Math.round(pct * 10) / 10)}%)` : ""} desde el cobro del ${dayMonth(from.value)}.`
+              : "";
+        };
+        $("[data-raise-quick]", form).addEventListener("click", e => {
+          const b = e.target.closest("[data-pct]");
+          if (!b) return;
+          amount.value = numberText(Math.round(current * (1 + Number(b.dataset.pct) / 100)));
+          amount.setCustomValidity("");
+          update();
+        });
+        form.addEventListener("input", update);
+        form.addEventListener("change", update);
+        update();
+      },
       onDelete:
         existing &&
         (() =>
@@ -203,10 +267,20 @@ export const MovementsForms = {
           sourceId: data.sourceId,
           recurring: data.recurring === "on",
         };
+        const raise =
+          isTemplate && values.recurring && data.raise === "on" && toNumber(data.raiseAmount) > 0
+            ? { from: data.raiseFrom, amount: toNumber(data.raiseAmount) }
+            : null;
         Store.commit(state => {
           if (existing) {
             const target = state.incomes.find(x => x.id === id);
             Object.assign(target, values, { recurring: values.recurring && !target.templateId });
+            if (isTemplate) {
+              // Se reemplaza el aumento que todavía no empezó; los que ya se aplicaron quedan
+              const next = Finance.nextRecurringDate(target, state.incomes);
+              target.raises = [...(target.raises ?? []).filter(r => r.from < next), ...(raise ? [raise] : [])];
+              if (!target.raises.length || !target.recurring) delete target.raises;
+            }
             delete target.demo;
           } else {
             state.incomes.push({ id: uid(), ...values });
@@ -214,9 +288,11 @@ export const MovementsForms = {
           Finance.settle();
         });
         Toast.show(
-          existing
-            ? "Ingreso actualizado."
-            : `Registraste un ingreso de ${Money.format(values.amount, values.currency)}.`,
+          raise && (pending?.from !== raise.from || pending?.amount !== raise.amount)
+            ? `Listo: desde el ${dayMonth(raise.from)} vas a cobrar ${Money.format(raise.amount, values.currency)}.`
+            : existing
+              ? "Ingreso actualizado."
+              : `Registraste un ingreso de ${Money.format(values.amount, values.currency)}.`,
         );
       },
     });

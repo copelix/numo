@@ -312,3 +312,63 @@ test("exporta a Excel eligiendo período y qué incluir, y baja la copia de segu
   await expect(page.getByRole("button", { name: /Copia de seguridad/ })).toContainText("Última: hoy");
   expect(errors).toEqual([]);
 });
+
+test("trae sola la inflación del INDEC y la muestra como oficial", async ({ context }) => {
+  const { page, errors } = await open(context, new Map());
+  await expect.poll(() => app(page, n => n.Store.state.settings.ipcOfficial["2030-02"])).toBe(3.1);
+  expect(await app(page, n => n.Inflation.rate("2030-01"))).toBe(2.5);
+  await app(page, n => n.Router.go("inflacion"));
+  await expect(page.getByText("Los datos se actualizan solos desde el INDEC")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("programa un aumento de un ingreso fijo para los próximos cobros", async ({ context }) => {
+  const { page, errors } = await open(context, new Map());
+  await app(page, n =>
+    n.Store.commit(state => {
+      state.incomes.push(
+        n.Schema.income({
+          id: "fijo",
+          description: "Mensualidad",
+          amount: 100000,
+          currency: "ARS",
+          date: n.Dates.addMonths(n.Dates.today(), -2, 1),
+          sourceId: "sueldo",
+          recurring: true,
+        }),
+      );
+      n.Finance.settle();
+    }),
+  );
+  const generated = await app(page, n => n.Store.state.incomes.filter(i => i.templateId === "fijo").length);
+  expect(generated).toBe(2);
+
+  // Desde un cobro automático se llega al ingreso fijo
+  await app(page, n => n.Forms.income(n.Store.state.incomes.find(i => i.templateId === "fijo").id));
+  const modal = page.locator("#modal");
+  await modal.getByRole("button", { name: "Cambiar el monto de los próximos meses" }).click();
+  await expect(modal.getByRole("heading", { name: "Editar ingreso" })).toBeVisible();
+
+  await modal.getByLabel("Me lo van a aumentar").check();
+  await modal.getByRole("button", { name: "+10%" }).click();
+  await expect(modal.locator('input[name="raiseAmount"]')).toHaveValue("110000");
+  await expect(modal.locator("[data-raise-hint]")).toContainText("(+10%)");
+  await modal.locator('button[type="submit"]').click();
+  await expect(modal).not.toBeVisible();
+  await expect(page.locator(".toast")).toContainText("vas a cobrar $ 110.000");
+
+  const t = await app(page, n => {
+    const t = n.Store.state.incomes.find(i => i.id === "fijo");
+    return { raises: t.raises, amount: t.amount, next: n.Finance.nextRecurringDate(t, n.Store.state.incomes) };
+  });
+  expect(t.amount).toBe(100000);
+  expect(t.raises).toEqual([{ from: t.next, amount: 110000 }]);
+
+  // Desmarcar quita el aumento pendiente
+  await app(page, n => n.Forms.income("fijo"));
+  await expect(modal.getByLabel("Me lo van a aumentar")).toBeChecked();
+  await modal.getByLabel("Me lo van a aumentar").uncheck();
+  await modal.locator('button[type="submit"]').click();
+  expect(await app(page, n => n.Store.state.incomes.find(i => i.id === "fijo").raises)).toBeUndefined();
+  expect(errors).toEqual([]);
+});
